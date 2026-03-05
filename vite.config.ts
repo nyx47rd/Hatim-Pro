@@ -13,6 +13,8 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'auto',
+        manifestFilename: 'manifest.json',
         includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg'],
         manifest: {
           name: 'Hatim Pro',
@@ -22,26 +24,34 @@ export default defineConfig(({mode}) => {
           background_color: '#f0fdf4',
           display: 'standalone',
           orientation: 'portrait',
+          start_url: '/',
+          id: '/',
           icons: [
             {
-              src: 'pwa-192x192.svg',
+              src: '/pwa-192x192.svg',
               sizes: '192x192',
               type: 'image/svg+xml',
               purpose: 'any'
             },
             {
-              src: 'pwa-512x512.svg',
+              src: '/pwa-512x512.svg',
               sizes: '512x512',
               type: 'image/svg+xml',
               purpose: 'any'
             },
             {
-              src: 'pwa-512x512.svg',
+              src: '/pwa-512x512.svg',
               sizes: '512x512',
               type: 'image/svg+xml',
               purpose: 'maskable'
             }
           ]
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true
         },
         devOptions: {
           enabled: true

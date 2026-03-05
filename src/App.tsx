@@ -25,7 +25,6 @@ import {
   Square
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
 
 const STORAGE_KEY = 'hatim_tracker_data_v3';
@@ -1137,7 +1136,6 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
-      <SpeedInsights />
     </div>
   );
 }

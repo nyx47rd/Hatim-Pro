@@ -5,7 +5,7 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(manifest.webmanifest|sw.js|workbox-.*.js|registerSW.js)",
+      "source": "/(manifest.json|manifest.webmanifest|sw.js|workbox-.*.js|registerSW.js)",
       "destination": "/$1"
     },
     {
