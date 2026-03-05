@@ -30,9 +30,11 @@ import { useAuth } from './contexts/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { syncDataToFirebase, listenToFirebaseData } from './services/db';
 import { auth } from './lib/firebase';
-import { signOut, deleteUser } from 'firebase/auth';
+import { signOut, deleteUser, multiFactor, TotpMultiFactorGenerator } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
+import { QRCodeSVG } from 'qrcode.react';
+import { getFirebaseErrorMessage } from './lib/firebaseErrors';
 
 const STORAGE_KEY = 'hatim_tracker_data_v3';
 const QURAN_TOTAL_PAGES = 604;
@@ -112,6 +114,15 @@ export default function App() {
   const [isJuzPickerOpen, setIsJuzPickerOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isDeleteAccountConfirmOpen, setIsDeleteAccountConfirmOpen] = useState(false);
+  
+  // 2FA States
+  const [isEnrolling2FA, setIsEnrolling2FA] = useState(false);
+  const [totpSecret, setTotpSecret] = useState<any>(null);
+  const [totpCode, setTotpCode] = useState('');
+  const [mfaError, setMfaError] = useState<string | null>(null);
+  const [mfaSuccess, setMfaSuccess] = useState<string | null>(null);
+  const [isMfaEnrolled, setIsMfaEnrolled] = useState(false);
+
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [selectedLogs, setSelectedLogs] = useState<string[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
@@ -187,6 +198,16 @@ export default function App() {
   
   const isFirebaseSyncing = useRef(false);
   const isInitialLoad = useRef(true);
+
+  // Check 2FA Enrollment status
+  useEffect(() => {
+    if (user) {
+      const enrolledFactors = multiFactor(user).enrolledFactors;
+      setIsMfaEnrolled(enrolledFactors.length > 0);
+    } else {
+      setIsMfaEnrolled(false);
+    }
+  }, [user]);
 
   // Listen to Firebase data
   useEffect(() => {
@@ -446,9 +467,55 @@ export default function App() {
       if (error.code === 'auth/requires-recent-login') {
         setErrorMessage("Hesabınızı silmek için güvenlik nedeniyle yeniden giriş yapmanız gerekmektedir. Lütfen çıkış yapıp tekrar giriş yapın ve tekrar deneyin.");
       } else {
-        setErrorMessage("Hesap silinirken bir hata oluştu: " + error.message);
+        setErrorMessage("Hesap silinirken bir hata oluştu: " + getFirebaseErrorMessage(error));
       }
       setIsDeleteAccountConfirmOpen(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    if (!user) return;
+    setMfaError(null);
+    setMfaSuccess(null);
+    try {
+      const multiFactorSession = await multiFactor(user).getSession();
+      const secret = await TotpMultiFactorGenerator.generateSecret(multiFactorSession);
+      setTotpSecret(secret);
+      setIsEnrolling2FA(true);
+    } catch (error: any) {
+      setMfaError(getFirebaseErrorMessage(error));
+    }
+  };
+
+  const handleConfirm2FA = async () => {
+    if (!user || !totpSecret || !totpCode) return;
+    setMfaError(null);
+    try {
+      const assertion = TotpMultiFactorGenerator.assertionForEnrollment(totpSecret, totpCode);
+      await multiFactor(user).enroll(assertion, "Authenticator App");
+      setIsEnrolling2FA(false);
+      setTotpSecret(null);
+      setTotpCode('');
+      setMfaSuccess('İki faktörlü doğrulama başarıyla etkinleştirildi.');
+      setIsMfaEnrolled(true);
+    } catch (error: any) {
+      setMfaError(getFirebaseErrorMessage(error));
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!user) return;
+    setMfaError(null);
+    setMfaSuccess(null);
+    try {
+      const enrolledFactors = multiFactor(user).enrolledFactors;
+      if (enrolledFactors.length > 0) {
+        await multiFactor(user).unenroll(enrolledFactors[0]);
+        setMfaSuccess('İki faktörlü doğrulama devre dışı bırakıldı.');
+        setIsMfaEnrolled(false);
+      }
+    } catch (error: any) {
+      setMfaError(getFirebaseErrorMessage(error));
     }
   };
 
@@ -744,9 +811,78 @@ export default function App() {
                     <p className="text-xs text-sage-500">{user.email}</p>
                   </div>
                 </div>
+
+                {/* 2FA Section */}
+                <div className="mt-4 p-4 bg-sage-50 rounded-2xl border border-sage-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <KeyRound size={18} className="text-sage-600" />
+                      <span className="font-bold text-sage-800 text-sm">İki Faktörlü Doğrulama (2FA)</span>
+                    </div>
+                    {isMfaEnrolled ? (
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-md">Aktif</span>
+                    ) : (
+                      <span className="text-xs font-bold text-sage-500 bg-sage-200 px-2 py-1 rounded-md">Pasif</span>
+                    )}
+                  </div>
+                  
+                  {mfaError && <p className="text-xs text-red-600 mb-2">{mfaError}</p>}
+                  {mfaSuccess && <p className="text-xs text-emerald-600 mb-2">{mfaSuccess}</p>}
+
+                  {isEnrolling2FA && totpSecret ? (
+                    <div className="mt-4 space-y-4">
+                      <p className="text-xs text-sage-600">
+                        1. Authenticator uygulamanızı (Google Authenticator, Authy vb.) açın ve aşağıdaki QR kodu okutun:
+                      </p>
+                      <div className="bg-white p-4 rounded-xl flex justify-center">
+                        <QRCodeSVG value={totpSecret.generateQrCodeUrl(user.email || 'Hatim Pro', 'Hatim Pro')} size={150} />
+                      </div>
+                      <p className="text-xs text-sage-600 text-center font-mono bg-white p-2 rounded-lg border border-sage-100">
+                        {totpSecret.secretKey}
+                      </p>
+                      <p className="text-xs text-sage-600">
+                        2. Uygulamada görünen 6 haneli kodu aşağıya girin:
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={totpCode}
+                          onChange={(e) => setTotpCode(e.target.value)}
+                          maxLength={6}
+                          placeholder="000000"
+                          className="flex-1 px-3 py-2 border border-sage-200 rounded-lg text-center tracking-widest font-mono text-sm focus:outline-none focus:ring-2 focus:ring-sage-500"
+                        />
+                        <button
+                          onClick={handleConfirm2FA}
+                          className="bg-sage-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-sage-700 transition-colors"
+                        >
+                          Onayla
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => { setIsEnrolling2FA(false); setTotpSecret(null); setMfaError(null); }}
+                        className="w-full text-xs text-sage-500 hover:text-sage-700 font-medium mt-2"
+                      >
+                        İptal Et
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={isMfaEnrolled ? handleDisable2FA : handleEnable2FA}
+                      className={`w-full py-2 mt-2 rounded-xl text-sm font-bold transition-colors ${
+                        isMfaEnrolled 
+                          ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                          : 'bg-sage-600 text-white hover:bg-sage-700'
+                      }`}
+                    >
+                      {isMfaEnrolled ? '2FA\'yı Devre Dışı Bırak' : '2FA\'yı Etkinleştir'}
+                    </button>
+                  )}
+                </div>
+
                 <button 
                   onClick={() => { playClick(); signOut(auth); }}
-                  className="w-full py-3 text-sage-600 font-bold bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors"
+                  className="w-full py-3 text-sage-600 font-bold bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors mt-2"
                 >
                   Çıkış Yap
                 </button>
