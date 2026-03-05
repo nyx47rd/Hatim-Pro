@@ -41,7 +41,6 @@ const SOUNDS = {
   success: 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
   delete: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
   open: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-  splash: 'https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3',
 };
 
 type View = 'home' | 'tasks' | 'history' | 'settings';
@@ -131,7 +130,6 @@ export default function App() {
   const [playSuccess] = useSound(SOUNDS.success, { soundEnabled: isSoundEnabled, volume: 0.5 });
   const [playDelete] = useSound(SOUNDS.delete, { soundEnabled: isSoundEnabled, volume: 0.5 });
   const [playOpen] = useSound(SOUNDS.open, { soundEnabled: isSoundEnabled, volume: 0.5 });
-  const [playSplash] = useSound(SOUNDS.splash, { soundEnabled: isSoundEnabled, volume: 0.5 });
   
   // Form States
   const [newPageInput, setNewPageInput] = useState<string>('');
@@ -148,12 +146,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('hatim_sound_enabled', isSoundEnabled.toString());
   }, [isSoundEnabled]);
-
-  useEffect(() => {
-    if (showSplash) {
-      playSplash();
-    }
-  }, [showSplash, playSplash]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -644,7 +636,7 @@ export default function App() {
       </div>
 
       <div className="text-center">
-        <p className="text-xs text-sage-400">Hatim Takip v3.1.0</p>
+        <p className="text-xs text-sage-400">⭐ Hatim Pro v3.2.0</p>
       </div>
     </div>
   );
@@ -712,7 +704,17 @@ export default function App() {
               </motion.div>
             </div>
 
-            <div className="mt-16 flex gap-2 justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="mt-8 text-center"
+            >
+              <h1 className="text-3xl font-bold text-white tracking-widest uppercase">⭐ Hatim Pro</h1>
+              <p className="text-sage-300 mt-2 text-sm font-medium tracking-tighter">Modern Kur'an Takipçisi</p>
+            </motion.div>
+
+            <div className="mt-12 flex gap-2 justify-center">
               {[0, 1, 2, 3, 4].map((i) => (
                 <motion.div
                   key={i}
@@ -737,7 +739,9 @@ export default function App() {
             {/* Header */}
             <header className="bg-white border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
               <div className="max-w-2xl mx-auto flex justify-between items-center">
-                <h1 className="display text-2xl font-bold text-sage-800 tracking-tight">Hatim Takip</h1>
+                <h1 className="display text-2xl font-bold text-sage-800 tracking-tight flex items-center gap-2">
+                  <span className="text-sage-500">⭐</span> Hatim Pro
+                </h1>
               </div>
             </header>
 
