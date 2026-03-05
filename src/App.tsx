@@ -222,7 +222,6 @@ export default function App() {
       setIsMfaEnrolled(true);
     } else {
       setIsMfaEnrolled(false);
-      setIs2FAVerified(false);
     }
   }, [user, data.mfaEnabled]);
 
@@ -628,7 +627,6 @@ export default function App() {
         setTotpCode('');
         setMfaSuccess('İki faktörlü doğrulama başarıyla etkinleştirildi.');
         setIsMfaEnrolled(true);
-        setIs2FAVerified(true);
         setData(prev => ({ ...prev, mfaEnabled: true, totpSecret: totpSecret }));
       } else {
         setMfaError("Girdiğiniz kod hatalı veya süresi dolmuş.");
