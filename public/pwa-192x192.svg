@@ -6,7 +6,7 @@
       <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="128" fill="#f0fdf4" />
+  <rect width="512" height="512" fill="#f0fdf4" />
   <path d="M256 80L315.5 210.5L456 231L356 331L379.5 471.5L256 405.5L132.5 471.5L156 331L56 231L196.5 210.5L256 80Z" fill="url(#grad)" />
   <circle cx="256" cy="210" r="25" fill="#fbbf24" opacity="0.9" />
 </svg>
