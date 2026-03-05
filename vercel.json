@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "builds": [
+  "framework": "vite",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    }
-  ],
-  "routes": [
+      "source": "/(manifest.webmanifest|sw.js|workbox-.*.js|registerSW.js)",
+      "destination": "/$1"
+    },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
