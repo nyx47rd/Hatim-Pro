@@ -23,7 +23,9 @@ import {
   Star,
   CheckSquare,
   Square,
-  Key
+  Key,
+  Lock,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -31,7 +33,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { syncDataToFirebase, listenToFirebaseData } from './services/db';
 import { auth } from './lib/firebase';
-import { signOut, deleteUser } from 'firebase/auth';
+import { signOut, deleteUser, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { QRCodeSVG } from 'qrcode.react';
@@ -124,9 +126,19 @@ export default function App() {
   const [mfaError, setMfaError] = useState<string | null>(null);
   const [mfaSuccess, setMfaSuccess] = useState<string | null>(null);
   const [isMfaEnrolled, setIsMfaEnrolled] = useState(false);
-  const [is2FAVerified, setIs2FAVerified] = useState(false);
-  const [loginTotpCode, setLoginTotpCode] = useState('');
-  const [loginMfaError, setLoginMfaError] = useState<string | null>(null);
+
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [passwordChangeTotp, setPasswordChangeTotp] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState<string | null>(null);
+
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [passwordResetTotp, setPasswordResetTotp] = useState('');
+  const [passwordResetError, setPasswordResetError] = useState<string | null>(null);
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState<string | null>(null);
 
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [selectedLogs, setSelectedLogs] = useState<string[]>([]);
@@ -455,31 +467,107 @@ export default function App() {
     setActiveView('home');
   };
 
-  const handleVerify2FALogin = async (e: FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !data.totpSecret || !loginTotpCode) return;
-    
-    setLoginMfaError(null);
-    try {
-      const totp = new OTPAuth.TOTP({
-        issuer: "Hatim Pro",
-        label: user.email || "Kullanıcı",
-        algorithm: "SHA1",
-        digits: 6,
-        period: 30,
-        secret: OTPAuth.Secret.fromBase32(data.totpSecret),
-      });
+    if (!user || !user.email) return;
 
-      const delta = totp.validate({ token: loginTotpCode, window: 1 });
-      
-      if (delta !== null) {
-        setIs2FAVerified(true);
-        setLoginTotpCode('');
-      } else {
-        setLoginMfaError("Girdiğiniz kod hatalı veya süresi dolmuş.");
+    setPasswordChangeError(null);
+    setPasswordChangeSuccess(null);
+
+    if (newPassword !== newPasswordConfirm) {
+      setPasswordChangeError("Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordChangeError("Yeni şifre en az 6 karakter olmalıdır.");
+      return;
+    }
+
+    if (isMfaEnrolled) {
+      if (!passwordChangeTotp) {
+        setPasswordChangeError("Lütfen 2FA kodunu girin.");
+        return;
       }
+      try {
+        const totp = new OTPAuth.TOTP({
+          issuer: "Hatim Pro",
+          label: user.email,
+          algorithm: "SHA1",
+          digits: 6,
+          period: 30,
+          secret: OTPAuth.Secret.fromBase32(data.totpSecret!),
+        });
+        const delta = totp.validate({ token: passwordChangeTotp, window: 1 });
+        if (delta === null) {
+          setPasswordChangeError("Girdiğiniz 2FA kodu hatalı veya süresi dolmuş.");
+          return;
+        }
+      } catch (err) {
+        setPasswordChangeError("2FA doğrulaması sırasında bir hata oluştu.");
+        return;
+      }
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+      
+      setPasswordChangeSuccess("Şifreniz başarıyla değiştirildi.");
+      setCurrentPassword('');
+      setNewPassword('');
+      setNewPasswordConfirm('');
+      setPasswordChangeTotp('');
+      setTimeout(() => setIsChangingPassword(false), 3000);
     } catch (error: any) {
-      setLoginMfaError("Doğrulama sırasında bir hata oluştu.");
+      setPasswordChangeError(getFirebaseErrorMessage(error));
+    }
+  };
+
+  const handleSendPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !user.email) return;
+
+    setPasswordResetError(null);
+    setPasswordResetSuccess(null);
+
+    if (isMfaEnrolled) {
+      if (!passwordResetTotp) {
+        setPasswordResetError("Lütfen 2FA kodunu girin.");
+        return;
+      }
+      try {
+        const totp = new OTPAuth.TOTP({
+          issuer: "Hatim Pro",
+          label: user.email,
+          algorithm: "SHA1",
+          digits: 6,
+          period: 30,
+          secret: OTPAuth.Secret.fromBase32(data.totpSecret!),
+        });
+        const delta = totp.validate({ token: passwordResetTotp, window: 1 });
+        if (delta === null) {
+          setPasswordResetError("Girdiğiniz 2FA kodu hatalı veya süresi dolmuş.");
+          return;
+        }
+      } catch (err) {
+        setPasswordResetError("2FA doğrulaması sırasında bir hata oluştu.");
+        return;
+      }
+    }
+
+    try {
+      const actionCodeSettings = {
+        url: window.location.origin,
+        handleCodeInApp: false,
+      };
+      await sendPasswordResetEmail(auth, user.email, actionCodeSettings);
+      setPasswordResetSuccess("Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.");
+      setPasswordResetTotp('');
+      setTimeout(() => setIsResettingPassword(false), 3000);
+    } catch (error: any) {
+      setPasswordResetError(getFirebaseErrorMessage(error));
     }
   };
 
@@ -950,6 +1038,156 @@ export default function App() {
           </div>
         </section>
 
+        {user && (
+          <section className="bg-white rounded-3xl p-6 border border-sage-100 shadow-sm">
+            <h3 className="text-sm font-bold text-sage-500 uppercase tracking-widest mb-4">Şifre İşlemleri</h3>
+            
+            <div className="space-y-4">
+              {/* Change Password */}
+              <div className="border border-sage-100 rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setIsChangingPassword(!isChangingPassword)}
+                  className="w-full flex items-center justify-between p-4 bg-sage-50 hover:bg-sage-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-lg text-sage-600 shadow-sm">
+                      <Lock size={20} />
+                    </div>
+                    <span className="font-bold text-sage-800">Şifre Değiştir</span>
+                  </div>
+                  <ChevronRight size={20} className={`text-sage-400 transition-transform ${isChangingPassword ? 'rotate-90' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {isChangingPassword && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <form onSubmit={handleChangePassword} className="p-4 bg-white space-y-4 border-t border-sage-100">
+                        {passwordChangeError && <p className="text-xs text-red-600">{passwordChangeError}</p>}
+                        {passwordChangeSuccess && <p className="text-xs text-emerald-600">{passwordChangeSuccess}</p>}
+                        
+                        <div>
+                          <label className="block text-xs font-bold text-sage-600 mb-1">Mevcut Şifre</label>
+                          <input
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre</label>
+                          <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            minLength={6}
+                            className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre (Tekrar)</label>
+                          <input
+                            type="password"
+                            value={newPasswordConfirm}
+                            onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                            required
+                            minLength={6}
+                            className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                          />
+                        </div>
+                        {isMfaEnrolled && (
+                          <div>
+                            <label className="block text-xs font-bold text-sage-600 mb-1">2FA Kodu</label>
+                            <input
+                              type="text"
+                              value={passwordChangeTotp}
+                              onChange={(e) => setPasswordChangeTotp(e.target.value)}
+                              required
+                              maxLength={6}
+                              placeholder="000000"
+                              className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm font-mono tracking-widest"
+                            />
+                          </div>
+                        )}
+                        <button
+                          type="submit"
+                          className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-2 rounded-xl transition-colors text-sm"
+                        >
+                          Şifreyi Güncelle
+                        </button>
+                      </form>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Reset Password */}
+              <div className="border border-sage-100 rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setIsResettingPassword(!isResettingPassword)}
+                  className="w-full flex items-center justify-between p-4 bg-sage-50 hover:bg-sage-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-lg text-sage-600 shadow-sm">
+                      <Mail size={20} />
+                    </div>
+                    <span className="font-bold text-sage-800">Şifre Sıfırlama Bağlantısı Gönder</span>
+                  </div>
+                  <ChevronRight size={20} className={`text-sage-400 transition-transform ${isResettingPassword ? 'rotate-90' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {isResettingPassword && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <form onSubmit={handleSendPasswordReset} className="p-4 bg-white space-y-4 border-t border-sage-100">
+                        {passwordResetError && <p className="text-xs text-red-600">{passwordResetError}</p>}
+                        {passwordResetSuccess && <p className="text-xs text-emerald-600">{passwordResetSuccess}</p>}
+                        
+                        <p className="text-sm text-sage-600">
+                          Kayıtlı e-posta adresinize ({user.email}) bir şifre sıfırlama bağlantısı gönderilecektir.
+                        </p>
+
+                        {isMfaEnrolled && (
+                          <div>
+                            <label className="block text-xs font-bold text-sage-600 mb-1">2FA Kodu</label>
+                            <input
+                              type="text"
+                              value={passwordResetTotp}
+                              onChange={(e) => setPasswordResetTotp(e.target.value)}
+                              required
+                              maxLength={6}
+                              placeholder="000000"
+                              className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm font-mono tracking-widest"
+                            />
+                          </div>
+                        )}
+                        <button
+                          type="submit"
+                          className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-2 rounded-xl transition-colors text-sm"
+                        >
+                          Bağlantıyı Gönder
+                        </button>
+                      </form>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section className="bg-white rounded-3xl p-6 border border-sage-100 shadow-sm">
           <h3 className="text-sm font-bold text-sage-500 uppercase tracking-widest mb-4">Uygulama Ayarları</h3>
           
@@ -1108,55 +1346,6 @@ export default function App() {
                   className="w-2 h-2 bg-sage-300 rounded-full shadow-[0_0_8px_rgba(167,183,171,0.5)]"
                 />
               ))}
-            </div>
-          </motion.div>
-        ) : user && data.mfaEnabled && !is2FAVerified ? (
-          <motion.div
-            key="2fa-verification"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-sage-50 flex flex-col items-center justify-center p-4"
-          >
-            <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl text-center">
-              <div className="w-16 h-16 bg-sage-100 text-sage-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Key size={32} />
-              </div>
-              <h2 className="text-2xl font-bold text-sage-800 mb-2">İki Faktörlü Doğrulama</h2>
-              <p className="text-sage-500 mb-6 text-sm">
-                Hesabınıza erişmek için Authenticator uygulamanızdaki 6 haneli kodu girin.
-              </p>
-
-              {loginMfaError && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm mb-4">
-                  {loginMfaError}
-                </div>
-              )}
-
-              <form onSubmit={handleVerify2FALogin} className="space-y-4">
-                <div>
-                  <input
-                    type="text"
-                    value={loginTotpCode}
-                    onChange={(e) => setLoginTotpCode(e.target.value)}
-                    required
-                    maxLength={6}
-                    className="w-full px-4 py-3 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 transition-all text-center tracking-widest text-lg font-mono"
-                    placeholder="000000"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-3 rounded-xl transition-colors"
-                >
-                  Doğrula
-                </button>
-              </form>
-              <button
-                onClick={() => signOut(auth)}
-                className="mt-6 text-sm text-sage-500 hover:text-sage-700 font-medium"
-              >
-                Çıkış Yap
-              </button>
             </div>
           </motion.div>
         ) : (
