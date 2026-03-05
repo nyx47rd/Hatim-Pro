@@ -25,7 +25,8 @@ import {
   Square,
   Key,
   Lock,
-  Mail
+  Mail,
+  Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -33,7 +34,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { syncDataToFirebase, listenToFirebaseData } from './services/db';
 import { auth } from './lib/firebase';
-import { signOut, deleteUser, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail } from 'firebase/auth';
+import { signOut, deleteUser, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, linkWithPopup, GithubAuthProvider, OAuthProvider } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { QRCodeSVG } from 'qrcode.react';
@@ -84,6 +85,27 @@ type View = 'home' | 'tasks' | 'history' | 'settings';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('home');
+  
+  // Dark Mode Logic
+  useEffect(() => {
+    const match = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    
+    // Initial check
+    if (match.matches) {
+      document.documentElement.classList.add('dark');
+    }
+
+    match.addEventListener('change', handleChange);
+    return () => match.removeEventListener('change', handleChange);
+  }, []);
+
   const [data, setData] = useState<HatimData>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -144,6 +166,92 @@ export default function App() {
   const [selectedLogs, setSelectedLogs] = useState<string[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Account Linking States
+  const [isLinking, setIsLinking] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
+
+  // Create Password States (for social login users)
+  const [showCreatePasswordModal, setShowCreatePasswordModal] = useState(false);
+  const [createPasswordInput, setCreatePasswordInput] = useState('');
+  const [createPasswordConfirm, setCreatePasswordConfirm] = useState('');
+  const [createPasswordError, setCreatePasswordError] = useState<string | null>(null);
+
+  // Check if user needs to create a password
+  useEffect(() => {
+    if (user && !authLoading) {
+      const hasPasswordProvider = user.providerData.some(p => p.providerId === 'password');
+      if (!hasPasswordProvider && user.providerData.length > 0) {
+        // User logged in with social provider but hasn't set a password yet
+        // We check this only once per session or when user changes
+        const hasSeenPrompt = sessionStorage.getItem('hasSeenPasswordPrompt');
+        if (!hasSeenPrompt) {
+          setShowCreatePasswordModal(true);
+          sessionStorage.setItem('hasSeenPasswordPrompt', 'true');
+        }
+      }
+    }
+  }, [user, authLoading]);
+
+  const handleLinkAccount = async (providerId: string) => {
+    if (!user) return;
+    setIsLinking(true);
+    setLinkError(null);
+    setLinkSuccess(null);
+
+    try {
+      let provider;
+      if (providerId === 'github.com') {
+        provider = new GithubAuthProvider();
+      } else if (providerId === 'microsoft.com') {
+        provider = new OAuthProvider('microsoft.com');
+      } else {
+        throw new Error('Geçersiz sağlayıcı.');
+      }
+
+      await linkWithPopup(user, provider);
+      setLinkSuccess('Hesap başarıyla bağlandı.');
+      playSuccess();
+    } catch (error: any) {
+      console.error("Link account error:", error);
+      if (error.code === 'auth/credential-already-in-use') {
+        setLinkError('Bu hesap zaten başka bir kullanıcıya bağlı.');
+      } else {
+        setLinkError('Hesap bağlanırken bir hata oluştu: ' + error.message);
+      }
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleCreatePassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    
+    if (createPasswordInput !== createPasswordConfirm) {
+      setCreatePasswordError('Şifreler eşleşmiyor.');
+      return;
+    }
+
+    if (createPasswordInput.length < 6) {
+      setCreatePasswordError('Şifre en az 6 karakter olmalıdır.');
+      return;
+    }
+
+    try {
+      await updatePassword(user, createPasswordInput);
+      playSuccess();
+      setShowCreatePasswordModal(false);
+      setMfaSuccess('Şifreniz başarıyla oluşturuldu.'); // Reusing success message state or create new one
+      // Clear inputs
+      setCreatePasswordInput('');
+      setCreatePasswordConfirm('');
+    } catch (error: any) {
+      console.error("Create password error:", error);
+      setCreatePasswordError('Şifre oluşturulurken bir hata oluştu: ' + error.message);
+    }
+  };
 
   const handleBulkDeleteLogs = () => {
     if (selectedLogs.length === 0) return;
@@ -664,7 +772,7 @@ export default function App() {
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-3xl p-8 shadow-sm border border-sage-100 relative overflow-hidden"
+        className="bg-white dark:bg-sage-100 rounded-3xl p-8 shadow-sm border border-sage-100 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
           <BookOpen size={120} />
@@ -739,7 +847,7 @@ export default function App() {
 
         <div className="space-y-3">
           {activeTaskLogs.slice(0, 5).map((log) => (
-            <div key={log.id} className="bg-white rounded-2xl p-4 border border-sage-100 shadow-sm flex items-center justify-between group">
+            <div key={log.id} className="bg-white dark:bg-sage-100 rounded-2xl p-4 border border-sage-100 shadow-sm flex items-center justify-between group">
               <div className="flex items-center gap-4">
                 <div className="bg-sage-50 p-3 rounded-xl text-sage-600">
                   <Calendar size={20} />
@@ -964,13 +1072,13 @@ export default function App() {
                       <p className="text-xs text-sage-600">
                         1. Authenticator uygulamanızı (Google Authenticator, Authy vb.) açın ve aşağıdaki QR kodu okutun:
                       </p>
-                      <div className="bg-white p-4 rounded-xl flex justify-center">
+                      <div className="bg-white dark:bg-sage-200 p-4 rounded-xl flex justify-center">
                         <QRCodeSVG 
                           value={`otpauth://totp/Hatim%20Pro:${user.email || 'Kullanıcı'}?secret=${totpSecret}&issuer=Hatim%20Pro`} 
                           size={150} 
                         />
                       </div>
-                      <p className="text-xs text-sage-600 text-center font-mono bg-white p-2 rounded-lg border border-sage-100">
+                      <p className="text-xs text-sage-600 text-center font-mono bg-white dark:bg-sage-200 p-2 rounded-lg border border-sage-100">
                         {totpSecret}
                       </p>
                       <p className="text-xs text-sage-600">
@@ -1182,6 +1290,60 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Account Linking */}
+              <div className="border border-sage-100 rounded-2xl overflow-hidden mt-4">
+                 <div className="p-4 bg-sage-50 border-b border-sage-100">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white p-2 rounded-lg text-sage-600 shadow-sm">
+                        <Link size={20} />
+                      </div>
+                      <span className="font-bold text-sage-800">Hesap Bağlantıları</span>
+                    </div>
+                 </div>
+                 <div className="p-4 bg-white dark:bg-sage-100 space-y-3">
+                    {linkError && <p className="text-xs text-red-600">{linkError}</p>}
+                    {linkSuccess && <p className="text-xs text-emerald-600">{linkSuccess}</p>}
+                    
+                    {/* Github */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                         <span className="font-semibold text-sage-700 text-sm">GitHub</span>
+                         {user.providerData.some(p => p.providerId === 'github.com') && (
+                           <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
+                         )}
+                      </div>
+                      {!user.providerData.some(p => p.providerId === 'github.com') && (
+                        <button 
+                          onClick={() => handleLinkAccount('github.com')}
+                          disabled={isLinking}
+                          className="text-xs bg-sage-100 hover:bg-sage-200 text-sage-700 font-bold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Bağla
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Microsoft */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                         <span className="font-semibold text-sage-700 text-sm">Microsoft</span>
+                         {user.providerData.some(p => p.providerId === 'microsoft.com') && (
+                           <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
+                         )}
+                      </div>
+                      {!user.providerData.some(p => p.providerId === 'microsoft.com') && (
+                        <button 
+                          onClick={() => handleLinkAccount('microsoft.com')}
+                          disabled={isLinking}
+                          className="text-xs bg-sage-100 hover:bg-sage-200 text-sage-700 font-bold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Bağla
+                        </button>
+                      )}
+                    </div>
+                 </div>
+              </div>
             </div>
           </section>
         )}
@@ -1355,7 +1517,7 @@ export default function App() {
             className="min-h-screen"
           >
             {/* Header */}
-            <header className="bg-white border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
+            <header className="bg-white dark:bg-sage-100 border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
               <div className="max-w-2xl mx-auto flex justify-between items-center">
                 <h1 className="display text-2xl font-bold text-sage-800 tracking-tight flex items-center gap-2">
                   <img src="/favicon.svg" alt="Hatim Pro Logo" className="w-8 h-8" referrerPolicy="no-referrer" />
@@ -1372,7 +1534,7 @@ export default function App() {
             </main>
 
             {/* Bottom Navbar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
+            <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-sage-100 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
               <div className="max-w-2xl mx-auto flex justify-around items-center">
                 <button 
                   onClick={() => { playClick(); setActiveView('home'); }}
@@ -1425,7 +1587,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl"
+              className="bg-white dark:bg-sage-100 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">İlerleme Kaydet</h3>
@@ -1488,7 +1650,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
+              className="bg-white dark:bg-sage-100 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">Yeni Görev</h3>
@@ -1756,6 +1918,75 @@ export default function App() {
                   Vazgeç
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Password Modal */}
+      <AnimatePresence>
+        {showCreatePasswordModal && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-sage-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl"
+            >
+              <div className="w-16 h-16 bg-sage-50 text-sage-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Key size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-sage-800 mb-2 text-center">Şifre Oluşturun</h3>
+              <p className="text-sage-500 text-sm mb-6 text-center">
+                Hesabınızın güvenliği için lütfen bir şifre belirleyin. Bu şifreyi daha sonra giriş yapmak için kullanabilirsiniz.
+              </p>
+              
+              <form onSubmit={handleCreatePassword} className="space-y-4">
+                {createPasswordError && <p className="text-xs text-red-600 text-center">{createPasswordError}</p>}
+                
+                <div>
+                  <label className="block text-xs font-bold text-sage-600 mb-1">Şifre</label>
+                  <input
+                    type="password"
+                    value={createPasswordInput}
+                    onChange={(e) => setCreatePasswordInput(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-sage-600 mb-1">Şifre (Tekrar)</label>
+                  <input
+                    type="password"
+                    value={createPasswordConfirm}
+                    onChange={(e) => setCreatePasswordConfirm(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                  />
+                </div>
+                
+                <button 
+                  type="submit"
+                  className="w-full bg-sage-600 text-white rounded-2xl py-4 font-bold shadow-lg hover:bg-sage-700 transition-all active:scale-95 mt-2"
+                >
+                  Şifre Oluştur
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowCreatePasswordModal(false)}
+                  className="w-full text-sage-400 text-xs font-bold hover:text-sage-600 transition-colors py-2"
+                >
+                  Daha Sonra
+                </button>
+              </form>
             </motion.div>
           </div>
         )}

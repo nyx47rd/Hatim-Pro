@@ -1,11 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Libre Baskerville", serif;
-  --font-display: "Cormorant Garamond", serif;
-  
+:root {
   --color-sage-50: #f4f7f4;
   --color-sage-100: #e6ede6;
   --color-sage-200: #ceddce;
@@ -18,8 +14,40 @@
   --color-sage-900: #2b382b;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-sage-50: #1a1d1a;
+    --color-sage-100: #2b382b;
+    --color-sage-200: #324232;
+    --color-sage-300: #3c523c;
+    --color-sage-400: #4a664a;
+    --color-sage-500: #608260;
+    --color-sage-600: #82a382;
+    --color-sage-700: #abc4ab;
+    --color-sage-800: #ceddce;
+    --color-sage-900: #e6ede6;
+  }
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Libre Baskerville", serif;
+  --font-display: "Cormorant Garamond", serif;
+  
+  --color-sage-50: var(--color-sage-50);
+  --color-sage-100: var(--color-sage-100);
+  --color-sage-200: var(--color-sage-200);
+  --color-sage-300: var(--color-sage-300);
+  --color-sage-400: var(--color-sage-400);
+  --color-sage-500: var(--color-sage-500);
+  --color-sage-600: var(--color-sage-600);
+  --color-sage-700: var(--color-sage-700);
+  --color-sage-800: var(--color-sage-800);
+  --color-sage-900: var(--color-sage-900);
+}
+
 body {
-  @apply bg-sage-50 text-sage-900 font-sans;
+  @apply bg-sage-50 text-sage-900 font-sans transition-colors duration-300;
 }
 
 .serif {
