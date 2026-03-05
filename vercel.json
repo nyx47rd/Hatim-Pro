@@ -5,10 +5,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(manifest.json|manifest.webmanifest|sw.js|workbox-.*.js|registerSW.js|.*\\.png|.*\\.svg|.*\\.ico)",
-      "destination": "/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
