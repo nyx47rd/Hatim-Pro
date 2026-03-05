@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, FormEvent } from 'react';
+import { useState, useEffect, useMemo, FormEvent, useRef } from 'react';
 import useSound from 'use-sound';
 import { 
   BookOpen, 
@@ -155,34 +155,48 @@ export default function App() {
   const [customTaskName, setCustomTaskName] = useState<string>('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
-
-  // Sync to Firebase when local data changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    if (user && !authLoading) {
-      syncDataToFirebase(user.uid, data);
-    }
-  }, [data, user, authLoading]);
+  
+  const isFirebaseSyncing = useRef(false);
+  const isInitialLoad = useRef(true);
 
   // Listen to Firebase data
   useEffect(() => {
     if (user && !authLoading) {
+      isInitialLoad.current = true;
       const unsubscribe = listenToFirebaseData(user.uid, (firebaseData) => {
-        // Simple merge: if firebase has data, we can use it.
-        // In a real app, you'd want a more robust merge strategy (e.g. comparing timestamps).
-        // Here we just overwrite local if firebase updates, but since we also sync up,
-        // we need to be careful of infinite loops. The listenToFirebaseData triggers onSnapshot.
-        // To avoid loop, we only update if JSON string differs.
-        setData(prev => {
-          if (JSON.stringify(prev) !== JSON.stringify(firebaseData)) {
-            return firebaseData;
+        if (firebaseData) {
+          setData(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(firebaseData)) {
+              isFirebaseSyncing.current = true;
+              return firebaseData;
+            }
+            return prev;
+          });
+        } else {
+          // Firebase has no data, push local data
+          if (isInitialLoad.current) {
+            syncDataToFirebase(user.uid, data);
           }
-          return prev;
-        });
+        }
+        isInitialLoad.current = false;
       });
       return () => unsubscribe();
     }
   }, [user, authLoading]);
+
+  // Sync to Firebase when local data changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    
+    if (isFirebaseSyncing.current) {
+      isFirebaseSyncing.current = false;
+      return;
+    }
+
+    if (user && !authLoading && !isInitialLoad.current) {
+      syncDataToFirebase(user.uid, data);
+    }
+  }, [data, user, authLoading]);
 
   useEffect(() => {
     localStorage.setItem('hatim_sound_enabled', isSoundEnabled.toString());

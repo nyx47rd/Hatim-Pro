@@ -26,13 +26,15 @@ export const loadDataFromFirebase = async (userId: string): Promise<HatimData | 
   return null;
 };
 
-export const listenToFirebaseData = (userId: string, onUpdate: (data: HatimData) => void) => {
+export const listenToFirebaseData = (userId: string, onUpdate: (data: HatimData | null) => void) => {
   if (!userId) return () => {};
   const docRef = doc(db, 'users', userId);
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data().data as HatimData;
       if (data) onUpdate(data);
+    } else {
+      onUpdate(null);
     }
   });
 };
