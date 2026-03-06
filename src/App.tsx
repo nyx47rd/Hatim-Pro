@@ -761,7 +761,7 @@ export default function App() {
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-sage-100 rounded-3xl p-8 shadow-sm border border-sage-100 relative overflow-hidden"
+        className="bg-white dark:bg-neutral-900 rounded-3xl p-8 shadow-sm border border-sage-100 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
           <BookOpen size={120} />
@@ -769,14 +769,14 @@ export default function App() {
         
         <div className="flex justify-between items-end mb-6">
           <div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-sage-500 dark:text-sage-500">İlerleme</span>
+            <span className="text-sm font-semibold uppercase tracking-wider text-sage-500 dark:text-white">İlerleme</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-5xl font-bold text-sage-800 dark:text-white">{progress.toFixed(1)}%</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-sm font-semibold uppercase tracking-wider text-sage-500 dark:text-sage-500">Mevcut Sayfa</span>
-            <div className="text-2xl font-bold text-sage-700 dark:text-sage-200">
+            <span className="text-sm font-semibold uppercase tracking-wider text-sage-500 dark:text-white">Mevcut Sayfa</span>
+            <div className="text-2xl font-bold text-sage-700 dark:text-white">
               {activeTask.currentPage || activeTask.startPage} <span className="text-sage-300 font-normal">/</span> {activeTask.endPage}
             </div>
           </div>
@@ -792,21 +792,21 @@ export default function App() {
         </div>
         
         <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="bg-sage-50 dark:bg-sage-200 rounded-2xl p-4 flex items-center gap-3">
-            <div className="bg-white dark:bg-sage-100 p-2 rounded-lg text-sage-600 dark:text-sage-400 shadow-sm">
+          <div className="bg-sage-50 dark:bg-neutral-800 rounded-2xl p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-neutral-700 p-2 rounded-lg text-sage-600 dark:text-white shadow-sm">
               <TrendingUp size={20} />
             </div>
             <div>
-              <p className="text-xs text-sage-500 dark:text-sage-500 font-semibold uppercase tracking-tighter">Kalan</p>
+              <p className="text-xs text-sage-500 dark:text-white font-semibold uppercase tracking-tighter">Kalan</p>
               <p className="text-lg font-bold text-sage-800 dark:text-white">{Math.max(0, totalPagesInRange - pagesReadInRange)}</p>
             </div>
           </div>
-          <div className="bg-sage-50 dark:bg-sage-200 rounded-2xl p-4 flex items-center gap-3">
-            <div className="bg-white dark:bg-sage-100 p-2 rounded-lg text-sage-600 dark:text-sage-400 shadow-sm">
+          <div className="bg-sage-50 dark:bg-neutral-800 rounded-2xl p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-neutral-700 p-2 rounded-lg text-sage-600 dark:text-white shadow-sm">
               <CheckCircle2 size={20} />
             </div>
             <div>
-              <p className="text-xs text-sage-500 dark:text-sage-500 font-semibold uppercase tracking-tighter">Okunan</p>
+              <p className="text-xs text-sage-500 dark:text-white font-semibold uppercase tracking-tighter">Okunan</p>
               <p className="text-lg font-bold text-sage-800 dark:text-white">{pagesReadInRange}</p>
             </div>
           </div>
@@ -860,7 +860,7 @@ export default function App() {
           ))}
           {activeTaskLogs.length === 0 && (
             <div className="bg-white/50 dark:bg-sage-100/50 border border-dashed border-sage-300 dark:border-sage-500 rounded-2xl p-12 text-center">
-              <p className="text-sage-500 dark:text-sage-400 italic">Henüz bir kayıt bulunmuyor.</p>
+              <p className="text-sage-500 dark:text-white italic">Henüz bir kayıt bulunmuyor.</p>
             </div>
           )}
         </div>
@@ -1038,7 +1038,7 @@ export default function App() {
                   </div>
                   <div>
                     <p className="font-bold text-sage-800 dark:text-white">Giriş Yapıldı</p>
-                    <p className="text-xs text-sage-500 dark:text-neutral-400">{user.email}</p>
+                    <p className="text-xs text-sage-500 dark:text-white">{user.email}</p>
                   </div>
                 </div>
 
@@ -1052,7 +1052,7 @@ export default function App() {
                     {isMfaEnrolled ? (
                       <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-neutral-700 px-2 py-1 rounded-md">Aktif</span>
                     ) : (
-                      <span className="text-xs font-bold text-sage-500 dark:text-neutral-400 bg-sage-200 dark:bg-neutral-700 px-2 py-1 rounded-md">Pasif</span>
+                      <span className="text-xs font-bold text-sage-500 dark:text-white bg-sage-200 dark:bg-neutral-700 px-2 py-1 rounded-md">Pasif</span>
                     )}
                   </div>
                   
@@ -1138,93 +1138,112 @@ export default function App() {
 
         {user && (
           <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
-            <h3 className="text-sm font-bold text-sage-500 dark:text-neutral-400 uppercase tracking-widest mb-4">Şifre İşlemleri</h3>
+            <h3 className="text-sm font-bold text-sage-500 dark:text-white uppercase tracking-widest mb-4">Şifre İşlemleri</h3>
             
             <div className="space-y-4">
-              {/* Change Password */}
-              <div className="border border-sage-100 dark:border-neutral-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => setIsChangingPassword(!isChangingPassword)}
-                  className="w-full flex items-center justify-between p-4 bg-sage-50 dark:bg-neutral-800 hover:bg-sage-100 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white dark:bg-neutral-700 p-2 rounded-lg text-sage-600 dark:text-white shadow-sm">
-                      <Lock size={20} />
+              {/* Password Operations */}
+              {user.providerData.some(p => p.providerId === 'password') ? (
+                /* Change Password */
+                <div className="border border-sage-100 dark:border-neutral-800 rounded-2xl overflow-hidden">
+                  <button
+                    onClick={() => setIsChangingPassword(!isChangingPassword)}
+                    className="w-full flex items-center justify-between p-4 bg-sage-50 dark:bg-neutral-800 hover:bg-sage-100 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white dark:bg-neutral-700 p-2 rounded-lg text-sage-600 dark:text-white shadow-sm">
+                        <Lock size={20} />
+                      </div>
+                      <span className="font-bold text-sage-800 dark:text-white">Şifre Değiştir</span>
                     </div>
-                    <span className="font-bold text-sage-800 dark:text-white">Şifre Değiştir</span>
-                  </div>
-                  <ChevronRight size={20} className={`text-sage-400 transition-transform ${isChangingPassword ? 'rotate-90' : ''}`} />
-                </button>
-                
-                <AnimatePresence>
-                  {isChangingPassword && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <form onSubmit={handleChangePassword} className="p-4 bg-white dark:bg-neutral-900 space-y-4 border-t border-sage-100 dark:border-neutral-800">
-                        {passwordChangeError && <p className="text-xs text-red-600">{passwordChangeError}</p>}
-                        {passwordChangeSuccess && <p className="text-xs text-emerald-600 dark:text-emerald-400">{passwordChangeSuccess}</p>}
-                        
-                        <div>
-                          <label className="block text-xs font-bold text-sage-600 dark:text-neutral-400 mb-1">Mevcut Şifre</label>
-                          <input
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            required
-                            className="w-full px-3 py-2 bg-sage-50 dark:bg-neutral-800 border border-sage-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 dark:text-white text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre</label>
-                          <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            minLength={6}
-                            className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre (Tekrar)</label>
-                          <input
-                            type="password"
-                            value={newPasswordConfirm}
-                            onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                            required
-                            minLength={6}
-                            className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
-                          />
-                        </div>
-                        {isMfaEnrolled && (
+                    <ChevronRight size={20} className={`text-sage-400 transition-transform ${isChangingPassword ? 'rotate-90' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {isChangingPassword && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <form onSubmit={handleChangePassword} className="p-4 bg-white dark:bg-neutral-900 space-y-4 border-t border-sage-100 dark:border-neutral-800">
+                          {passwordChangeError && <p className="text-xs text-red-600">{passwordChangeError}</p>}
+                          {passwordChangeSuccess && <p className="text-xs text-emerald-600 dark:text-emerald-400">{passwordChangeSuccess}</p>}
+                          
                           <div>
-                            <label className="block text-xs font-bold text-sage-600 mb-1">2FA Kodu</label>
+                            <label className="block text-xs font-bold text-sage-600 dark:text-white mb-1">Mevcut Şifre</label>
                             <input
-                              type="text"
-                              value={passwordChangeTotp}
-                              onChange={(e) => setPasswordChangeTotp(e.target.value)}
+                              type="password"
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
                               required
-                              maxLength={6}
-                              placeholder="000000"
-                              className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm font-mono tracking-widest"
+                              className="w-full px-3 py-2 bg-sage-50 dark:bg-neutral-800 border border-sage-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 dark:text-white text-sm"
                             />
                           </div>
-                        )}
-                        <button
-                          type="submit"
-                          className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-2 rounded-xl transition-colors text-sm"
-                        >
-                          Şifreyi Güncelle
-                        </button>
-                      </form>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                          <div>
+                            <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre</label>
+                            <input
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              required
+                              minLength={6}
+                              className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-sage-600 mb-1">Yeni Şifre (Tekrar)</label>
+                            <input
+                              type="password"
+                              value={newPasswordConfirm}
+                              onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                              required
+                              minLength={6}
+                              className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm"
+                            />
+                          </div>
+                          {isMfaEnrolled && (
+                            <div>
+                              <label className="block text-xs font-bold text-sage-600 mb-1">2FA Kodu</label>
+                              <input
+                                type="text"
+                                value={passwordChangeTotp}
+                                onChange={(e) => setPasswordChangeTotp(e.target.value)}
+                                required
+                                maxLength={6}
+                                placeholder="000000"
+                                className="w-full px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 text-sm font-mono tracking-widest"
+                              />
+                            </div>
+                          )}
+                          <button
+                            type="submit"
+                            className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-2 rounded-xl transition-colors text-sm"
+                          >
+                            Şifreyi Güncelle
+                          </button>
+                        </form>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                /* Create Password */
+                <div className="border border-sage-100 dark:border-neutral-800 rounded-2xl overflow-hidden">
+                  <button
+                    onClick={() => setShowCreatePasswordModal(true)}
+                    className="w-full flex items-center justify-between p-4 bg-sage-50 dark:bg-neutral-800 hover:bg-sage-100 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white dark:bg-neutral-700 p-2 rounded-lg text-sage-600 dark:text-white shadow-sm">
+                        <Key size={20} />
+                      </div>
+                      <span className="font-bold text-sage-800 dark:text-white">Şifre Oluştur</span>
+                    </div>
+                    <ChevronRight size={20} className="text-sage-400" />
+                  </button>
+                </div>
+              )}
 
 
 
@@ -1245,7 +1264,7 @@ export default function App() {
                     {/* Google */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                         <span className="font-semibold text-sage-700 dark:text-neutral-300 text-sm">Google</span>
+                         <span className="font-semibold text-sage-700 dark:text-white text-sm">Google</span>
                          {user.providerData.some(p => p.providerId === 'google.com') && (
                            <span className="text-[10px] bg-emerald-100 dark:bg-neutral-700 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
                          )}
@@ -1264,7 +1283,7 @@ export default function App() {
                     {/* Facebook */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                         <span className="font-semibold text-sage-700 dark:text-neutral-300 text-sm">Facebook</span>
+                         <span className="font-semibold text-sage-700 dark:text-white text-sm">Facebook</span>
                          {user.providerData.some(p => p.providerId === 'facebook.com') && (
                            <span className="text-[10px] bg-emerald-100 dark:bg-neutral-700 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
                          )}
@@ -1283,7 +1302,7 @@ export default function App() {
                     {/* Github */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                         <span className="font-semibold text-sage-700 dark:text-neutral-300 text-sm">GitHub</span>
+                         <span className="font-semibold text-sage-700 dark:text-white text-sm">GitHub</span>
                          {user.providerData.some(p => p.providerId === 'github.com') && (
                            <span className="text-[10px] bg-emerald-100 dark:bg-neutral-700 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
                          )}
@@ -1302,7 +1321,7 @@ export default function App() {
                     {/* Microsoft */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                         <span className="font-semibold text-sage-700 dark:text-neutral-300 text-sm">Microsoft</span>
+                         <span className="font-semibold text-sage-700 dark:text-white text-sm">Microsoft</span>
                          {user.providerData.some(p => p.providerId === 'microsoft.com') && (
                            <span className="text-[10px] bg-emerald-100 dark:bg-neutral-700 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">Bağlı</span>
                          )}
@@ -1324,7 +1343,7 @@ export default function App() {
         )}
 
         <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
-          <h3 className="text-sm font-bold text-sage-500 dark:text-neutral-400 uppercase tracking-widest mb-4">Uygulama Ayarları</h3>
+          <h3 className="text-sm font-bold text-sage-500 dark:text-white uppercase tracking-widest mb-4">Uygulama Ayarları</h3>
           
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -1334,7 +1353,7 @@ export default function App() {
                 </div>
                 <div>
                   <p className="font-bold text-sage-800 dark:text-white">Ses Efektleri</p>
-                  <p className="text-xs text-sage-500 dark:text-neutral-400">Etkileşimlerde ses çal</p>
+                  <p className="text-xs text-sage-500 dark:text-white">Etkileşimlerde ses çal</p>
                 </div>
               </div>
               <button 
@@ -1352,7 +1371,7 @@ export default function App() {
                 </div>
                 <div>
                   <p className="font-bold text-sage-800 dark:text-white">Görünüm</p>
-                  <p className="text-xs text-sage-500 dark:text-neutral-400">Karanlık modu aç/kapat</p>
+                  <p className="text-xs text-sage-500 dark:text-white">Karanlık modu aç/kapat</p>
                 </div>
               </div>
               <button 
@@ -1370,7 +1389,7 @@ export default function App() {
                 </div>
                 <div>
                   <p className="font-bold text-sage-800 dark:text-white">Açılış Ekranı</p>
-                  <p className="text-xs text-sage-500 dark:text-neutral-400">Uygulama açılırken splash göster</p>
+                  <p className="text-xs text-sage-500 dark:text-white">Uygulama açılırken splash göster</p>
                 </div>
               </div>
               <button 
@@ -1385,7 +1404,7 @@ export default function App() {
 
         <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
           <h3 className="text-sm font-bold text-red-500 uppercase tracking-widest mb-4">Tehlikeli Bölge</h3>
-          <p className="text-sm text-sage-600 dark:text-neutral-400 mb-6">
+          <p className="text-sm text-sage-600 dark:text-white mb-6">
             Tüm verilerinizi (görevler, okuma geçmişi ve ayarlar) kalıcı olarak silmek için aşağıdaki butonu kullanın.
           </p>
           <button 
@@ -1415,7 +1434,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-sage-50">
+    <div className="min-h-screen bg-sage-50 dark:bg-black">
       <AnimatePresence mode="wait">
         {showSplash || authLoading ? (
           <motion.div
@@ -1510,7 +1529,7 @@ export default function App() {
             className="min-h-screen"
           >
             {/* Header */}
-            <header className="bg-white dark:bg-sage-100 border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
+            <header className="bg-white dark:bg-neutral-900 border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
               <div className="max-w-2xl mx-auto flex justify-between items-center">
                 <h1 className="display text-2xl font-bold text-sage-800 tracking-tight flex items-center gap-2">
                   <img src="/favicon.svg" alt="Hatim Pro Logo" className="w-8 h-8" referrerPolicy="no-referrer" />
@@ -1527,7 +1546,7 @@ export default function App() {
             </main>
 
             {/* Bottom Navbar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-sage-100 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
+            <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
               <div className="max-w-2xl mx-auto flex justify-around items-center">
                 <button 
                   onClick={() => { playClick(); setActiveView('home'); }}
@@ -1580,7 +1599,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl"
+              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">İlerleme Kaydet</h3>
@@ -1643,7 +1662,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
+              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">Yeni Görev</h3>
@@ -1767,12 +1786,12 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={32} />
               </div>
-              <h3 className="text-xl font-bold text-sage-800 dark:text-sage-100 mb-2">Görevi Sil?</h3>
+              <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Görevi Sil?</h3>
               <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
                 Bu görevi ve tüm kayıtlarını silmek istediğinize emin misiniz?
               </p>
@@ -1810,12 +1829,12 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
             >
               <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Info size={32} />
               </div>
-              <h3 className="text-xl font-bold text-sage-800 dark:text-sage-100 mb-2">Bilgi</h3>
+              <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Bilgi</h3>
               <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
                 {errorMessage}
               </p>
@@ -1845,12 +1864,12 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={32} />
               </div>
-              <h3 className="text-xl font-bold text-sage-800 dark:text-sage-100 mb-2">Hesabı Sil?</h3>
+              <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Hesabı Sil?</h3>
               <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
                 Hesabınızı ve buluttaki tüm verilerinizi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
               </p>
@@ -1888,12 +1907,12 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <RotateCcw size={32} />
               </div>
-              <h3 className="text-xl font-bold text-sage-800 dark:text-sage-100 mb-2">Verileri Sıfırla?</h3>
+              <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Verileri Sıfırla?</h3>
               <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
                 Tüm görevleriniz ve okuma geçmişiniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.
               </p>
@@ -1930,7 +1949,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-sage-100 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl"
             >
               <div className="w-16 h-16 bg-sage-50 text-sage-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Key size={32} />
