@@ -1614,47 +1614,47 @@ export default function App() {
 
             {/* Bottom Navbar */}
             {activeView !== 'zikir' && activeView !== 'profile' && (
-              <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-sage-200 dark:border-white/10 px-6 py-3 pb-8 md:pb-3 z-40">
+              <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-sage-200 dark:border-white/10 px-4 py-1 pb-2 z-40">
                 <div className="max-w-2xl mx-auto flex justify-between items-center">
                   <button 
                     onClick={() => { playClick(); setActiveView('home'); }}
-                    className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeView === 'home' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'home' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <Home size={24} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Ana Sayfa</span>
+                    <Home size={20} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Ana Sayfa</span>
                   </button>
                   <button 
                     onClick={() => handleProtectedAction(() => { playClick(); setActiveView('tasks'); })}
-                    className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeView === 'tasks' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'tasks' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <ListTodo size={24} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Görevler</span>
+                    <ListTodo size={20} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Görevler</span>
                   </button>
                   
                   {/* Zikir Button */}
                   <button 
                     onClick={() => { playClick(); setActiveView('zikir'); }}
-                    className="flex-1 flex flex-col items-center justify-center -mt-8 relative z-50"
+                    className="flex-1 flex flex-col items-center justify-center -mt-4 relative z-50"
                   >
-                    <div className="bg-black dark:bg-white text-white dark:text-black p-4 rounded-full shadow-xl shadow-black/20 dark:shadow-white/10 border-4 border-white dark:border-black transform transition-transform active:scale-95">
-                      <RotateCcw size={28} />
+                    <div className="bg-black dark:bg-white text-white dark:text-black p-2.5 rounded-full shadow-lg shadow-black/20 dark:shadow-white/10 border-2 border-white dark:border-black transform transition-transform active:scale-95">
+                      <RotateCcw size={22} />
                     </div>
-                    <span className="text-[10px] font-bold mt-1 text-neutral-600 dark:text-neutral-400">Zikir</span>
+                    <span className="text-[9px] font-bold mt-0.5 text-neutral-600 dark:text-neutral-400">Zikir</span>
                   </button>
 
                   <button 
                     onClick={() => handleProtectedAction(() => { playClick(); setActiveView('history'); })}
-                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'history' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'history' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <Clock size={24} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Geçmiş</span>
+                    <Clock size={20} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Geçmiş</span>
                   </button>
                   <button 
                     onClick={() => handleProtectedAction(() => { playClick(); setActiveView('profile'); setProfileUsername(undefined); })}
-                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'profile' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'profile' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <User size={24} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Profil</span>
+                    <User size={20} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Profil</span>
                   </button>
                 </div>
               </nav>

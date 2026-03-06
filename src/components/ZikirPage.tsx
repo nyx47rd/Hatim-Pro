@@ -21,6 +21,8 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [zikirName, setZikirName] = useState('Subhanallah');
+  const [isCreating, setIsCreating] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{ show: boolean; title: string; message: string; type: 'alert' | 'confirm'; onConfirm?: () => void } | null>(null);
 
   // Sound effect for click (simple beep or click)
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -70,52 +72,93 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
 
   const handleReset = async () => {
     playClick();
-    if (confirm('Sayacı sıfırlamak istediğinize emin misiniz?')) {
-      if (sessionId) {
-        await updateDoc(doc(db, 'zikir_sessions', sessionId), { count: 0 });
-      } else {
-        setCount(0);
+    setAlertConfig({
+      show: true,
+      title: 'Sıfırla',
+      message: 'Sayacı sıfırlamak istediğinize emin misiniz?',
+      type: 'confirm',
+      onConfirm: async () => {
+        if (sessionId) {
+          await updateDoc(doc(db, 'zikir_sessions', sessionId), { count: 0 });
+        } else {
+          setCount(0);
+        }
+        setAlertConfig(null);
       }
-    }
+    });
   };
 
   const createSession = async () => {
     playClick();
     if (!user) {
-      alert('Çoklu zikir için giriş yapmalısınız.');
+      setAlertConfig({
+        show: true,
+        title: 'Giriş Gerekli',
+        message: 'Çoklu zikir için giriş yapmalısınız.',
+        type: 'alert'
+      });
       return;
     }
     
-    const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    await setDoc(doc(db, 'zikir_sessions', newSessionId), {
-      host: user.uid,
-      count: count,
-      name: zikirName,
-      target: target,
-      participants: [user.uid],
-      createdAt: new Date().toISOString()
-    });
-    
-    setSessionId(newSessionId);
-    setIsMultiplayer(true);
+    setIsCreating(true);
+    try {
+      const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      await setDoc(doc(db, 'zikir_sessions', newSessionId), {
+        host: user.uid,
+        count: count,
+        name: zikirName,
+        target: target,
+        participants: [user.uid],
+        createdAt: new Date().toISOString()
+      });
+      
+      setSessionId(newSessionId);
+      setIsMultiplayer(true);
+      setShowJoinModal(false); // Close modal after creation
+    } catch (error) {
+      console.error("Error creating session:", error);
+      setAlertConfig({
+        show: true,
+        title: 'Hata',
+        message: 'Oda oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.',
+        type: 'alert'
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const joinSession = async () => {
     playClick();
     if (!user) {
-      alert('Çoklu zikir için giriş yapmalısınız.');
+      setAlertConfig({
+        show: true,
+        title: 'Giriş Gerekli',
+        message: 'Çoklu zikir için giriş yapmalısınız.',
+        type: 'alert'
+      });
       return;
     }
     if (!joinId) return;
 
-    const sessionRef = doc(db, 'zikir_sessions', joinId);
-    await updateDoc(sessionRef, {
-      participants: arrayUnion(user.uid)
-    });
-    
-    setSessionId(joinId);
-    setIsMultiplayer(true);
-    setShowJoinModal(false);
+    try {
+      const sessionRef = doc(db, 'zikir_sessions', joinId);
+      await updateDoc(sessionRef, {
+        participants: arrayUnion(user.uid)
+      });
+      
+      setSessionId(joinId);
+      setIsMultiplayer(true);
+      setShowJoinModal(false);
+    } catch (error) {
+      console.error("Error joining session:", error);
+      setAlertConfig({
+        show: true,
+        title: 'Hata',
+        message: 'Odaya katılırken bir hata oluştu. Kodun doğru olduğundan emin olun.',
+        type: 'alert'
+      });
+    }
   };
 
   const copySessionId = () => {
@@ -221,11 +264,18 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
           {isMultiplayer && (
             <button
               onClick={() => {
-                if(confirm('Odadan ayrılmak istiyor musunuz?')) {
-                  setSessionId(null);
-                  setIsMultiplayer(false);
-                  setCount(0);
-                }
+                setAlertConfig({
+                  show: true,
+                  title: 'Ayrıl',
+                  message: 'Odadan ayrılmak istiyor musunuz?',
+                  type: 'confirm',
+                  onConfirm: () => {
+                    setSessionId(null);
+                    setIsMultiplayer(false);
+                    setCount(0);
+                    setAlertConfig(null);
+                  }
+                });
               }}
               className="flex-1 bg-red-900/20 border border-red-900/50 text-red-500 py-4 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-red-900/30 transition-colors"
             >
@@ -254,12 +304,30 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
               <h3 className="text-xl font-bold text-white mb-4">Birlikte Zikir</h3>
               
               <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Zikir Adı</label>
+                  <input
+                    type="text"
+                    value={zikirName}
+                    onChange={(e) => setZikirName(e.target.value)}
+                    placeholder="Örn: Subhanallah"
+                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+                  />
+                </div>
+
                 <button
                   onClick={createSession}
-                  className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-200 transition-colors"
+                  disabled={isCreating}
+                  className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-200 transition-colors disabled:opacity-50"
                 >
-                  <Users size={20} />
-                  Yeni Oda Oluştur
+                  {isCreating ? (
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Users size={20} />
+                      Yeni Oda Oluştur
+                    </>
+                  )}
                 </button>
                 
                 <div className="relative flex items-center py-2">
@@ -295,6 +363,56 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
               >
                 İptal
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Alert/Confirm Modal */}
+      <AnimatePresence>
+        {alertConfig?.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2">{alertConfig.title}</h3>
+              <p className="text-neutral-400 text-sm mb-8 leading-relaxed">
+                {alertConfig.message}
+              </p>
+              
+              <div className="space-y-3">
+                {alertConfig.type === 'confirm' ? (
+                  <>
+                    <button
+                      onClick={() => alertConfig.onConfirm?.()}
+                      className="w-full bg-white text-black font-bold py-4 rounded-2xl hover:bg-neutral-200 transition-colors active:scale-95"
+                    >
+                      Evet
+                    </button>
+                    <button
+                      onClick={() => setAlertConfig(null)}
+                      className="w-full bg-neutral-800 text-white font-bold py-4 rounded-2xl hover:bg-neutral-700 transition-colors"
+                    >
+                      Vazgeç
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setAlertConfig(null)}
+                    className="w-full bg-white text-black font-bold py-4 rounded-2xl hover:bg-neutral-200 transition-colors active:scale-95"
+                  >
+                    Tamam
+                  </button>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
