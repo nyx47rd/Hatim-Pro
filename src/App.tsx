@@ -31,7 +31,8 @@ import {
   Sun,
   User,
   MoreHorizontal,
-  Settings
+  Settings,
+  ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -109,9 +110,23 @@ export default function App() {
     return undefined;
   });
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  const [editUsername, setEditUsername] = useState(profile?.username || '');
   const { theme, setTheme } = useTheme();
 
+  const handleSaveUsername = async () => {
+    if (!user || !editUsername) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        username: editUsername.toLowerCase()
+      });
+      alert('Kullanıcı adı güncellendi!');
+    } catch (e) {
+      console.error("Error updating username", e);
+      alert('Kullanıcı adı güncellenirken hata oluştu.');
+    }
+  };
+  
   // Auth Enforcement
   const handleProtectedAction = (action: () => void) => {
     if (!user) {
@@ -1072,6 +1087,25 @@ export default function App() {
       </div>
       
       <div className="space-y-4">
+        <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
+          <h3 className="text-sm font-bold text-sage-500 dark:text-neutral-400 uppercase tracking-widest mb-4">Profil Bilgileri</h3>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-sage-600 dark:text-sage-300">Kullanıcı Adı</label>
+            <input 
+              type="text" 
+              value={editUsername}
+              onChange={(e) => setEditUsername(e.target.value)}
+              className="w-full bg-white dark:bg-neutral-800 border border-sage-100 dark:border-neutral-700 rounded-2xl px-4 py-3 focus:border-sage-500 focus:outline-none transition-all"
+            />
+            <button 
+              onClick={handleSaveUsername}
+              className="bg-sage-600 text-white py-2 rounded-xl font-bold hover:bg-sage-700 transition-colors"
+            >
+              Kullanıcı Adını Kaydet
+            </button>
+          </div>
+        </section>
+
         <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
           <h3 className="text-sm font-bold text-sage-500 dark:text-neutral-400 uppercase tracking-widest mb-4">Hesap & Eşitleme</h3>
           
