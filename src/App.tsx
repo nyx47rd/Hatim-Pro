@@ -743,15 +743,18 @@ export default function App() {
 
   const handleConfirm2FA = async () => {
     if (!user || !totpSecret || !totpCode) return;
+    console.log("Confirming 2FA with secret:", totpSecret);
     setMfaError(null);
     try {
+      const secret = OTPAuth.Secret.fromBase32(totpSecret);
+      console.log("Secret parsed successfully");
       const totp = new OTPAuth.TOTP({
         issuer: "Hatim Pro",
         label: user.email || "Kullanıcı",
         algorithm: "SHA1",
         digits: 6,
         period: 30,
-        secret: OTPAuth.Secret.fromBase32(totpSecret),
+        secret: secret,
       });
 
       const delta = totp.validate({ token: totpCode, window: 1 });
