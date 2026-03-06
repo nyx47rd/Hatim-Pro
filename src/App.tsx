@@ -29,7 +29,8 @@ import {
   Link,
   Moon,
   Sun,
-  User
+  User,
+  MoreHorizontal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -1592,6 +1593,25 @@ export default function App() {
 
             <main className="max-w-2xl mx-auto px-6 pt-8">
               {activeView === 'home' && renderHome()}
+              {activeView === 'more' && (
+                <div className="flex flex-col gap-4 p-4">
+                  <h1 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Diğer</h1>
+                  <button 
+                    onClick={() => { playClick(); setActiveView('profile'); }} 
+                    className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <User className="text-sage-600 dark:text-white" size={24} />
+                    <span className="font-bold text-sage-800 dark:text-white">Profil</span>
+                  </button>
+                  <button 
+                    onClick={() => { playClick(); setActiveView('settings'); }} 
+                    className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <Settings className="text-sage-600 dark:text-white" size={24} />
+                    <span className="font-bold text-sage-800 dark:text-white">Ayarlar</span>
+                  </button>
+                </div>
+              )}
               {activeView === 'tasks' && renderTasks()}
               {activeView === 'history' && renderHistory()}
               {activeView === 'settings' && renderSettings()}
@@ -1613,7 +1633,7 @@ export default function App() {
             </main>
 
             {/* Bottom Navbar */}
-            {activeView !== 'zikir' && activeView !== 'profile' && (
+            {activeView !== 'zikir' && activeView !== 'profile' && activeView !== 'more' && (
               <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-sage-200 dark:border-white/10 px-4 py-1 pb-2 z-40">
                 <div className="max-w-2xl mx-auto flex justify-between items-center">
                   <button 
@@ -1650,11 +1670,11 @@ export default function App() {
                     <span className="text-[9px] font-bold uppercase tracking-widest">Geçmiş</span>
                   </button>
                   <button 
-                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('profile'); setProfileUsername(undefined); })}
-                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'profile' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('more'); })}
+                    className={`flex-1 flex flex-col items-center gap-0 transition-colors ${activeView === 'more' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <User size={20} />
-                    <span className="text-[9px] font-bold uppercase tracking-widest">Profil</span>
+                    <MoreHorizontal size={20} />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Diğer</span>
                   </button>
                 </div>
               </nav>
@@ -1743,7 +1763,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
+              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto h-[600px]"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">Yeni Görev</h3>
