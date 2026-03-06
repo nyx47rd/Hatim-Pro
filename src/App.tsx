@@ -85,12 +85,23 @@ const recalculateTaskLogs = (logs: ReadingLog[], task: HatimTask) => {
   };
 };
 
-type View = 'home' | 'tasks' | 'history' | 'settings';
+import { ZikirPage } from './components/ZikirPage';
+
+type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('home');
   const { user, loading: authLoading } = useAuth();
   const { theme, setTheme } = useTheme();
+
+  // Auth Enforcement
+  const handleProtectedAction = (action: () => void) => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+    } else {
+      action();
+    }
+  };
   
   const [data, setData] = useState<HatimData>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -816,8 +827,8 @@ export default function App() {
       {/* Quick Actions */}
       <div className="flex gap-4">
         <button 
-          onClick={() => { playOpen(); setIsAddLogOpen(true); }}
-          className="flex-1 bg-sage-600 hover:bg-sage-700 text-white rounded-2xl py-4 px-6 font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-sage-200 active:scale-95"
+          onClick={() => handleProtectedAction(() => { playOpen(); setIsAddLogOpen(true); })}
+          className="flex-1 bg-black hover:bg-neutral-800 text-white rounded-2xl py-4 px-6 font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-black/10 active:scale-95 border border-neutral-800"
         >
           <Plus size={20} />
           İlerleme Kaydet
@@ -883,8 +894,8 @@ export default function App() {
             </button>
           )}
           <button 
-            onClick={() => { playOpen(); setIsAddTaskOpen(true); }}
-            className="bg-sage-100 dark:bg-neutral-800 text-sage-600 dark:text-white p-2 rounded-full hover:bg-sage-200 dark:hover:bg-neutral-700 transition-colors"
+            onClick={() => handleProtectedAction(() => { playOpen(); setIsAddTaskOpen(true); })}
+            className="bg-black dark:bg-white text-white dark:text-black p-2 rounded-full hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors shadow-md"
           >
             <Plus size={24} />
           </button>
@@ -1127,7 +1138,7 @@ export default function App() {
                 </p>
                 <button 
                   onClick={() => { playClick(); setIsAuthModalOpen(true); }}
-                  className="w-full py-3 text-white font-bold bg-sage-600 rounded-xl hover:bg-sage-700 transition-colors"
+                  className="w-full py-3 text-white font-bold bg-black rounded-xl hover:bg-neutral-800 transition-colors shadow-lg shadow-black/10"
                 >
                   Giriş Yap / Kayıt Ol
                 </button>
@@ -1543,41 +1554,60 @@ export default function App() {
               {activeView === 'tasks' && renderTasks()}
               {activeView === 'history' && renderHistory()}
               {activeView === 'settings' && renderSettings()}
+              {activeView === 'zikir' && (
+                <div className="fixed inset-0 z-50 bg-black">
+                  <ZikirPage onBack={() => setActiveView('home')} playClick={playClick} />
+                </div>
+              )}
             </main>
 
             {/* Bottom Navbar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
-              <div className="max-w-2xl mx-auto flex justify-around items-center">
-                <button 
-                  onClick={() => { playClick(); setActiveView('home'); }}
-                  className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'home' ? 'text-sage-600' : 'text-sage-400'}`}
-                >
-                  <Home size={24} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Ana Sayfa</span>
-                </button>
-                <button 
-                  onClick={() => { playClick(); setActiveView('tasks'); }}
-                  className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'tasks' ? 'text-sage-600' : 'text-sage-400'}`}
-                >
-                  <ListTodo size={24} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Görevler</span>
-                </button>
-                <button 
-                  onClick={() => { playClick(); setActiveView('history'); }}
-                  className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'history' ? 'text-sage-600' : 'text-sage-400'}`}
-                >
-                  <Clock size={24} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Geçmiş</span>
-                </button>
-                <button 
-                  onClick={() => { playClick(); setActiveView('settings'); }}
-                  className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'settings' ? 'text-sage-600' : 'text-sage-400'}`}
-                >
-                  <SettingsIcon size={24} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Ayarlar</span>
-                </button>
-              </div>
-            </nav>
+            {activeView !== 'zikir' && (
+              <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
+                <div className="max-w-2xl mx-auto flex justify-around items-center">
+                  <button 
+                    onClick={() => { playClick(); setActiveView('home'); }}
+                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'home' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                  >
+                    <Home size={24} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Ana Sayfa</span>
+                  </button>
+                  <button 
+                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('tasks'); })}
+                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'tasks' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                  >
+                    <ListTodo size={24} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Görevler</span>
+                  </button>
+                  
+                  {/* Zikir Button */}
+                  <button 
+                    onClick={() => { playClick(); setActiveView('zikir'); }}
+                    className="flex flex-col items-center justify-center -mt-8"
+                  >
+                    <div className="bg-black dark:bg-white text-white dark:text-black p-4 rounded-full shadow-xl shadow-black/20 dark:shadow-white/10 border-4 border-white dark:border-black transform transition-transform active:scale-95">
+                      <RotateCcw size={28} />
+                    </div>
+                    <span className="text-[10px] font-bold mt-1 text-neutral-600 dark:text-neutral-400">Zikir</span>
+                  </button>
+
+                  <button 
+                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('history'); })}
+                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'history' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                  >
+                    <Clock size={24} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Geçmiş</span>
+                  </button>
+                  <button 
+                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('settings'); })}
+                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'settings' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                  >
+                    <SettingsIcon size={24} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Ayarlar</span>
+                  </button>
+                </div>
+              </nav>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

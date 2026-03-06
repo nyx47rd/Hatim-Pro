@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    {/* @ts-ignore */}
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>
         <App />

@@ -6,7 +6,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signInAnonymously
 } from 'firebase/auth';
 import { getFirebaseErrorMessage } from '../lib/firebaseErrors';
 
@@ -37,6 +38,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleClose = () => {
     resetState();
     onClose();
+  };
+
+  const handleGuestLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInAnonymously(auth);
+      handleClose();
+    } catch (err: any) {
+      setError(getFirebaseErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGithubLogin = async () => {
@@ -263,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-sage-600 hover:bg-sage-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 mt-6"
+                      className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-black/10 active:scale-[0.98] flex items-center justify-center gap-2 mt-6 border border-neutral-800"
                     >
                       {loading ? (
                         <span className="animate-pulse">Bekleniyor...</span>
@@ -274,6 +288,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       )}
                     </button>
                   </form>
+
+                  <div className="mt-4">
+                    <button
+                      onClick={handleGuestLogin}
+                      disabled={loading}
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                    >
+                      Misafir Olarak Devam Et
+                    </button>
+                  </div>
 
                   <div className="mt-6 flex flex-col gap-3">
                     <div className="relative flex items-center py-2">
