@@ -1061,7 +1061,12 @@ export default function App() {
 
   const renderSettings = () => (
     <div className="space-y-8 pb-24">
-      <h2 className="text-2xl font-bold text-sage-800 dark:text-white px-2">Ayarlar</h2>
+      <div className="flex items-center gap-4 px-2">
+        <button onClick={() => { playClick(); setActiveView('more'); }} className="p-2 hover:bg-sage-100 dark:hover:bg-neutral-800 rounded-full">
+          <ChevronLeft size={24} />
+        </button>
+        <h2 className="text-2xl font-bold text-sage-800 dark:text-white">Ayarlar</h2>
+      </div>
       
       <div className="space-y-4">
         <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
@@ -1596,7 +1601,12 @@ export default function App() {
               {activeView === 'home' && renderHome()}
               {activeView === 'more' && (
                 <div className="flex flex-col gap-4 p-4">
-                  <h1 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Diğer</h1>
+                  <div className="flex items-center justify-between mb-2">
+                    <h1 className="text-xl font-bold text-sage-800 dark:text-white">Diğer</h1>
+                    <button onClick={() => { playClick(); setActiveView('home'); }} className="text-sage-500 hover:text-sage-800 dark:text-sage-400 dark:hover:text-white">
+                      <X size={24} />
+                    </button>
+                  </div>
                   <button 
                     onClick={() => { playClick(); setActiveView('profile'); }} 
                     className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
@@ -1620,7 +1630,7 @@ export default function App() {
                 <ProfilePage 
                   username={profileUsername} 
                   onBack={() => {
-                    setActiveView('home');
+                    setActiveView('more');
                     window.history.pushState({}, '', '/');
                   }} 
                   playClick={playClick} 

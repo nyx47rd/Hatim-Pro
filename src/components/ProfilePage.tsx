@@ -298,6 +298,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
                 </div>
 
                 <div>
+                  <label className="block text-xs font-bold text-white/40 uppercase mb-2">Profil Fotoğrafı URL</label>
+                  <input 
+                    type="text" 
+                    value={editPhoto}
+                    onChange={(e) => setEditPhoto(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:border-white focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-xs font-bold text-white/40 uppercase mb-2">Görünen İsim</label>
                   <input 
                     type="text" 
