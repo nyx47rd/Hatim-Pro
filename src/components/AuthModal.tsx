@@ -172,11 +172,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <div className="p-8">
               {isResetPassword ? (
                 <>
-                  <button onClick={() => { setIsResetPassword(false); setError(null); setSuccessMsg(null); }} className="mb-4 text-sage-500 dark:text-white hover:text-sage-700 dark:hover:text-gray-300 flex items-center gap-1 text-sm font-medium">
+                  <button onClick={() => { setIsResetPassword(false); setError(null); setSuccessMsg(null); }} className="mb-4 text-sage-500 dark:text-white hover:text-sage-700 dark:hover:text-white flex items-center gap-1 text-sm font-medium">
                     <ArrowLeft size={16} /> Geri
                   </button>
                   <h2 className="text-2xl font-bold text-sage-800 dark:text-white mb-2">Şifremi Unuttum</h2>
-                  <p className="text-sage-500 dark:text-white mb-6 text-sm">
+                  <p className="text-sage-500 dark:text-white/80 mb-6 text-sm">
                     E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
                   </p>
 
@@ -220,7 +220,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <h2 className="text-2xl font-bold text-sage-800 dark:text-white mb-2">
                     {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
                   </h2>
-                  <p className="text-sage-500 dark:text-white mb-6 text-sm">
+                  <p className="text-sage-500 dark:text-white/80 mb-6 text-sm">
                     {isLogin 
                       ? 'Verilerinizi eşitlemek için giriş yapın.' 
                       : 'Cihazlar arası eşitleme için hesap oluşturun.'}
@@ -255,7 +255,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                           <button 
                             type="button"
                             onClick={() => { setIsResetPassword(true); setError(null); setSuccessMsg(null); }}
-                            className="text-xs text-sage-500 dark:text-white hover:text-sage-700 dark:hover:text-gray-300 font-medium"
+                            className="text-xs text-sage-500 dark:text-white/60 hover:text-sage-700 dark:hover:text-white font-medium"
                           >
                             Şifremi Unuttum
                           </button>
@@ -357,7 +357,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         setIsLogin(!isLogin);
                         setError(null);
                       }}
-                      className="text-sage-600 dark:text-white text-sm font-semibold hover:underline"
+                      className="text-sage-600 dark:text-white/80 text-sm font-semibold hover:underline"
                     >
                       {isLogin ? 'Hesabınız yok mu? Kayıt olun.' : 'Zaten hesabınız var mı? Giriş yapın.'}
                     </button>

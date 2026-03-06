@@ -28,7 +28,8 @@ import {
   Mail,
   Link,
   Moon,
-  Sun
+  Sun,
+  User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -86,11 +87,26 @@ const recalculateTaskLogs = (logs: ReadingLog[], task: HatimTask) => {
 };
 
 import { ZikirPage } from './components/ZikirPage';
+import { ProfilePage } from './components/ProfilePage';
 
-type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir';
+type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile';
 
 export default function App() {
-  const [activeView, setActiveView] = useState<View>('home');
+  const [activeView, setActiveView] = useState<View>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/@')) {
+      return 'profile';
+    }
+    return 'home';
+  });
+  const [profileUsername, setProfileUsername] = useState<string | undefined>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/@')) {
+      return path.substring(2);
+    }
+    return undefined;
+  });
+
   const { user, loading: authLoading } = useAuth();
   const { theme, setTheme } = useTheme();
 
@@ -516,8 +532,17 @@ export default function App() {
       const endJuz = Math.max(startJuzSelection, juz);
       const start = JUZ_START_PAGES[startJuz - 1];
       const end = JUZ_START_PAGES[endJuz] - 1;
-      createNewTask(`${startJuz}-${endJuz}. Cüzler`, start, end);
+      
+      // Instead of creating immediately, populate custom task fields
+      setCustomTaskName(`${startJuz}-${endJuz}. Cüzler`);
+      setCustomStartPage(start.toString());
+      setCustomEndPage(end.toString());
       setStartJuzSelection(null);
+      setIsJuzPickerOpen(false);
+      
+      // Scroll to custom task form or focus it
+      const form = document.querySelector('form');
+      form?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -1413,6 +1438,23 @@ export default function App() {
           </div>
         </section>
 
+        {/* About Section */}
+        <section className="bg-white dark:bg-black rounded-3xl p-6 border border-sage-100 dark:border-white/10 shadow-sm mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-sage-100 dark:bg-white/10 rounded-xl">
+              <Info size={20} className="text-sage-600 dark:text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-sage-800 dark:text-white">Hakkında</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 bg-sage-50 dark:bg-white/5 rounded-2xl">
+              <p className="text-sm text-sage-600 dark:text-white/80 leading-relaxed">
+                Bu uygulama Yaşar Efe tarafından geliştirilmiştir. Modern bir Kur'an takip ve zikir uygulamasıdır.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-sage-100 dark:border-neutral-800 shadow-sm">
           <h3 className="text-sm font-bold text-red-500 uppercase tracking-widest mb-4">Tehlikeli Bölge</h3>
           <p className="text-sm text-sage-600 dark:text-white mb-6">
@@ -1439,7 +1481,6 @@ export default function App() {
       </div>
 
       <div className="text-center">
-        <p className="text-xs text-sage-400">⭐ Hatim Pro v3.2.0</p>
       </div>
     </div>
   );
@@ -1514,7 +1555,7 @@ export default function App() {
               className="mt-8 text-center"
             >
               <h1 className="text-3xl font-bold text-white tracking-widest uppercase">⭐ Hatim Pro</h1>
-              <p className="text-sage-300 mt-2 text-sm font-medium tracking-tighter">Modern Kur'an Takipçisi</p>
+              <p className="text-white mt-2 text-sm font-medium tracking-tighter">Modern Kur'an Takipçisi</p>
             </motion.div>
 
             <div className="mt-12 flex gap-2 justify-center">
@@ -1526,7 +1567,7 @@ export default function App() {
                     opacity: [0.3, 1, 0.3] 
                   }}
                   transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
-                  className="w-2 h-2 bg-sage-300 rounded-full shadow-[0_0_8px_rgba(167,183,171,0.5)]"
+                  className="w-2 h-2 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                 />
               ))}
             </div>
@@ -1554,6 +1595,16 @@ export default function App() {
               {activeView === 'tasks' && renderTasks()}
               {activeView === 'history' && renderHistory()}
               {activeView === 'settings' && renderSettings()}
+              {activeView === 'profile' && (
+                <ProfilePage 
+                  username={profileUsername} 
+                  onBack={() => {
+                    setActiveView('home');
+                    window.history.pushState({}, '', '/');
+                  }} 
+                  playClick={playClick} 
+                />
+              )}
               {activeView === 'zikir' && (
                 <div className="fixed inset-0 z-50 bg-black">
                   <ZikirPage onBack={() => setActiveView('home')} playClick={playClick} />
@@ -1562,19 +1613,19 @@ export default function App() {
             </main>
 
             {/* Bottom Navbar */}
-            {activeView !== 'zikir' && (
-              <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-sage-200 px-6 py-3 pb-8 md:pb-3 z-40">
-                <div className="max-w-2xl mx-auto flex justify-around items-center">
+            {activeView !== 'zikir' && activeView !== 'profile' && (
+              <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-sage-200 dark:border-white/10 px-6 py-3 pb-8 md:pb-3 z-40">
+                <div className="max-w-2xl mx-auto flex justify-between items-center">
                   <button 
                     onClick={() => { playClick(); setActiveView('home'); }}
-                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'home' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeView === 'home' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
                     <Home size={24} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Ana Sayfa</span>
                   </button>
                   <button 
                     onClick={() => handleProtectedAction(() => { playClick(); setActiveView('tasks'); })}
-                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'tasks' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeView === 'tasks' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
                     <ListTodo size={24} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Görevler</span>
@@ -1583,7 +1634,7 @@ export default function App() {
                   {/* Zikir Button */}
                   <button 
                     onClick={() => { playClick(); setActiveView('zikir'); }}
-                    className="flex flex-col items-center justify-center -mt-8"
+                    className="flex-1 flex flex-col items-center justify-center -mt-8 relative z-50"
                   >
                     <div className="bg-black dark:bg-white text-white dark:text-black p-4 rounded-full shadow-xl shadow-black/20 dark:shadow-white/10 border-4 border-white dark:border-black transform transition-transform active:scale-95">
                       <RotateCcw size={28} />
@@ -1599,11 +1650,11 @@ export default function App() {
                     <span className="text-[10px] font-bold uppercase tracking-widest">Geçmiş</span>
                   </button>
                   <button 
-                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('settings'); })}
-                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'settings' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
+                    onClick={() => handleProtectedAction(() => { playClick(); setActiveView('profile'); setProfileUsername(undefined); })}
+                    className={`flex flex-col items-center gap-1 transition-colors ${activeView === 'profile' ? 'text-sage-600 dark:text-white' : 'text-sage-400'}`}
                   >
-                    <SettingsIcon size={24} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Ayarlar</span>
+                    <User size={24} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Profil</span>
                   </button>
                 </div>
               </nav>
@@ -1894,13 +1945,13 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={32} />
               </div>
               <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Hesabı Sil?</h3>
-              <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
+              <p className="text-sage-500 dark:text-white/80 text-sm mb-8">
                 Hesabınızı ve buluttaki tüm verilerinizi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
               </p>
               <div className="space-y-3">
@@ -1912,7 +1963,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => { playClick(); setIsDeleteAccountConfirmOpen(false); }}
-                  className="w-full bg-sage-50 text-sage-600 rounded-2xl py-4 font-bold hover:bg-sage-100 transition-all"
+                  className="w-full bg-sage-50 dark:bg-white/10 text-sage-600 dark:text-white rounded-2xl py-4 font-bold hover:bg-sage-100 dark:hover:bg-white/20 transition-all"
                 >
                   Vazgeç
                 </button>
@@ -1937,13 +1988,13 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <RotateCcw size={32} />
               </div>
               <h3 className="text-xl font-bold text-sage-800 dark:text-white mb-2">Verileri Sıfırla?</h3>
-              <p className="text-sage-500 dark:text-sage-400 text-sm mb-8">
+              <p className="text-sage-500 dark:text-white/80 text-sm mb-8">
                 Tüm görevleriniz ve okuma geçmişiniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.
               </p>
               <div className="space-y-3">
@@ -1955,7 +2006,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => { playClick(); setIsResetConfirmOpen(false); }}
-                  className="w-full bg-sage-50 text-sage-600 rounded-2xl py-4 font-bold hover:bg-sage-100 transition-all"
+                  className="w-full bg-sage-50 dark:bg-white/10 text-sage-600 dark:text-white rounded-2xl py-4 font-bold hover:bg-sage-100 dark:hover:bg-white/20 transition-all"
                 >
                   Vazgeç
                 </button>
