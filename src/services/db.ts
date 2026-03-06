@@ -6,7 +6,19 @@ export const syncDataToFirebase = async (userId: string, data: HatimData) => {
   if (!userId) return;
   try {
     const docRef = doc(db, 'users', userId);
-    await setDoc(docRef, { data, updatedAt: new Date().toISOString() }, { merge: true });
+    
+    // Calculate stats
+    const totalHatim = data.tasks.filter(t => t.isCompleted).length;
+    const totalReadPages = data.logs.reduce((sum, log) => sum + log.pagesRead, 0);
+    
+    await setDoc(docRef, { 
+      data, 
+      updatedAt: new Date().toISOString(),
+      stats: {
+        totalHatim,
+        totalReadPages
+      }
+    }, { merge: true });
   } catch (error) {
     console.error("Error syncing to Firebase:", error);
   }

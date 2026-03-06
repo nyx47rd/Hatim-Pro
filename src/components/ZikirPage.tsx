@@ -24,13 +24,24 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{ show: boolean; title: string; message: string; type: 'alert' | 'confirm'; onConfirm?: () => void } | null>(null);
 
+  const sessionZikirCountRef = useRef(0);
+
   // Sound effect for click (simple beep or click)
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
     audioRef.current.volume = 0.5;
-  }, []);
+
+    return () => {
+      // Save remaining zikirs on unmount
+      if (sessionZikirCountRef.current > 0 && user) {
+        updateDoc(doc(db, 'users', user.uid), {
+          'stats.totalZikir': increment(sessionZikirCountRef.current)
+        }).catch(console.error);
+      }
+    };
+  }, [user]);
 
   const playSound = () => {
     if (audioRef.current) {
@@ -67,6 +78,17 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick }) => {
       });
     } else {
       setCount(prev => prev + 1);
+    }
+
+    if (user) {
+      sessionZikirCountRef.current += 1;
+      if (sessionZikirCountRef.current >= 10) {
+        const countToSave = sessionZikirCountRef.current;
+        sessionZikirCountRef.current = 0;
+        updateDoc(doc(db, 'users', user.uid), {
+          'stats.totalZikir': increment(countToSave)
+        }).catch(console.error);
+      }
     }
   };
 

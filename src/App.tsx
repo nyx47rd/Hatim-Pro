@@ -32,7 +32,8 @@ import {
   User,
   MoreHorizontal,
   Settings,
-  ChevronLeft
+  ChevronLeft,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -1709,12 +1710,21 @@ export default function App() {
             className="min-h-screen"
           >
             {/* Header */}
-            <header className="bg-white dark:bg-neutral-900 border-b border-sage-200 px-6 py-6 sticky top-0 z-30">
+            <header className="bg-white dark:bg-neutral-900 border-b border-sage-200 dark:border-neutral-800 px-6 py-4 sticky top-0 z-30">
               <div className="max-w-2xl mx-auto flex justify-between items-center">
-                <h1 className="display text-2xl font-bold text-sage-800 tracking-tight flex items-center gap-2">
+                <h1 className="display text-2xl font-bold text-sage-800 dark:text-white tracking-tight flex items-center gap-2">
                   <img src="/favicon.svg" alt="Hatim Pro Logo" className="w-8 h-8" referrerPolicy="no-referrer" />
                   Hatim Pro
                 </h1>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => { playClick(); alert('Bildirimler yakında eklenecek!'); }}
+                    className="relative p-2 text-sage-600 dark:text-sage-400 hover:bg-sage-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+                  >
+                    <Bell size={24} />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900"></span>
+                  </button>
+                </div>
               </div>
             </header>
 

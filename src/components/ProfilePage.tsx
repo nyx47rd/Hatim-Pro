@@ -55,26 +55,39 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
   const [editPhoto, setEditPhoto] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const [followersCount, setFollowersCount] = useState(0);
+
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
+      let currentProfileData = null;
       if (username) {
         // Fetch by username
         const q = query(collection(db, 'users'), where('username', '==', username), limit(1));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          setProfile(snap.docs[0].data());
+          currentProfileData = snap.docs[0].data();
+          setProfile(currentProfileData);
         } else {
           setProfile(null);
         }
       } else if (user) {
         // Fetch current user
+        currentProfileData = currentUserProfile;
         setProfile(currentUserProfile);
         setEditName(currentUserProfile?.displayName || '');
         setEditUsername(currentUserProfile?.username || '');
         setEditBio(currentUserProfile?.bio || '');
         setEditPhoto(currentUserProfile?.photoURL || '');
       }
+      
+      if (currentProfileData?.uid) {
+        // Fetch followers count
+        const followersQuery = query(collection(db, 'users'), where('following', 'array-contains', currentProfileData.uid));
+        const followersSnap = await getDocs(followersQuery);
+        setFollowersCount(followersSnap.size);
+      }
+      
       setLoading(false);
     };
 
@@ -87,15 +100,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
     
     const isFollowing = currentUserProfile.following?.includes(profile.uid);
     const currentUserRef = doc(db, 'users', user.uid);
-    const targetUserRef = doc(db, 'users', profile.uid);
 
     try {
       if (isFollowing) {
         await updateDoc(currentUserRef, { following: arrayRemove(profile.uid) });
-        await updateDoc(targetUserRef, { followers: arrayRemove(user.uid) });
+        setFollowersCount(prev => Math.max(0, prev - 1));
       } else {
         await updateDoc(currentUserRef, { following: arrayUnion(profile.uid) });
-        await updateDoc(targetUserRef, { followers: arrayUnion(user.uid) });
+        setFollowersCount(prev => prev + 1);
       }
     } catch (e) {
       console.error("Follow error", e);
@@ -106,10 +118,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
     e.preventDefault();
     if (!searchQuery.trim()) return;
     
+    const searchStr = searchQuery.trim().toLowerCase();
     const q = query(
       collection(db, 'users'), 
-      where('username', '>=', searchQuery.toLowerCase()),
-      where('username', '<=', searchQuery.toLowerCase() + '\uf8ff'),
+      where('username', '>=', searchStr),
+      where('username', '<=', searchStr + '\uf8ff'),
       limit(10)
     );
     
@@ -212,7 +225,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
               <p className="text-xs text-white/40 uppercase tracking-widest">Takip</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold">{profile?.followers?.length || 0}</p>
+              <p className="text-lg font-bold">{followersCount}</p>
               <p className="text-xs text-white/40 uppercase tracking-widest">Takipçi</p>
             </div>
           </div>
