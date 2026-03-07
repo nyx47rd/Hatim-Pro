@@ -63,8 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const unsubProfile = onSnapshot(profileRef, (doc) => {
           if (doc.exists()) {
-            setProfile(doc.data() as UserProfile);
+            setProfile({ ...doc.data(), uid: doc.id } as UserProfile);
           }
+        }, (error) => {
+          console.error("Profile snapshot error:", error);
         });
         
         setLoading(false);

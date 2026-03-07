@@ -91,6 +91,8 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
       });
       fetchedTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setTasks(fetchedTasks);
+    }, (error) => {
+      console.error("Zikir sessions snapshot error:", error);
     });
     return () => unsubscribe();
   }, [user]);
@@ -122,6 +124,8 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
         setActiveTask(null);
         setActiveTaskId(null);
       }
+    }, (error) => {
+      console.error("Active zikir session snapshot error:", error);
     });
 
     return () => unsubscribe();

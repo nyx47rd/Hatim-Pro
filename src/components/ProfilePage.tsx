@@ -72,7 +72,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
         const q = query(collection(db, 'users'), where('username', '==', currentUsername), limit(1));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          currentProfileData = snap.docs[0].data();
+          currentProfileData = { ...snap.docs[0].data(), uid: snap.docs[0].id };
           setProfile(currentProfileData);
         } else {
           setProfile(null);

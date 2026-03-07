@@ -33,6 +33,8 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
       // Sort by createdAt desc
       notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setNotifications(notifs);
+    }, (error) => {
+      console.error("Notifications panel snapshot error:", error);
     });
 
     return () => unsubscribe();

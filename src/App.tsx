@@ -124,6 +124,8 @@ export default function App() {
     const q = query(collection(db, 'notifications'), where('userId', '==', user.uid), where('read', '==', false));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUnreadNotifications(snapshot.docs.length);
+    }, (error) => {
+      console.error("Notifications snapshot error:", error);
     });
     return () => unsubscribe();
   }, [user]);
