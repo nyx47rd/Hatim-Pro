@@ -17,7 +17,7 @@ export default defineConfig(({mode}) => {
         manifestFilename: 'manifest.json',
         includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg'],
         manifest: {
-          name: 'Hatim Pro',
+          name: 'HatimPro',
           short_name: 'HatimPro',
           description: 'Modern Kur\'an-ı Kerim Hatim Takip Uygulaması',
           theme_color: '#4B5E51',

@@ -947,7 +947,7 @@ export default function App() {
           <span>•</span>
           <a href="/terms" onClick={(e) => { e.preventDefault(); setActiveView('terms'); window.history.pushState({}, '', '/terms'); }} className="hover:text-sage-600 dark:hover:text-neutral-300 transition-colors">Kullanım Koşulları</a>
         </div>
-        <p>© 2026 Hatim Pro. Tüm hakları saklıdır.</p>
+        <p>© 2026 HatimPro. Tüm hakları saklıdır.</p>
       </footer>
     </div>
   );
@@ -1155,7 +1155,7 @@ export default function App() {
                       </p>
                       <div className="bg-white p-4 rounded-xl flex justify-center">
                         <QRCodeSVG 
-                          value={`otpauth://totp/Hatim%20Pro:${user.email || 'Kullanıcı'}?secret=${totpSecret}&issuer=Hatim%20Pro`} 
+                          value={`otpauth://totp/HatimPro:${user.email || 'Kullanıcı'}?secret=${totpSecret}&issuer=HatimPro`} 
                           size={150} 
                         />
                       </div>
@@ -1634,7 +1634,7 @@ export default function App() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="mt-8 text-center"
             >
-              <h1 className="text-3xl font-bold text-white tracking-widest uppercase">⭐ Hatim Pro</h1>
+              <h1 className="text-3xl font-bold text-white tracking-widest uppercase">⭐ HatimPro</h1>
               <p className="text-white mt-2 text-sm font-medium tracking-tighter">Modern Kur'an Takipçisi</p>
             </motion.div>
 
@@ -1664,8 +1664,8 @@ export default function App() {
             <header className="bg-white dark:bg-neutral-900 border-b border-sage-200 dark:border-neutral-800 px-6 py-4 sticky top-0 z-30">
               <div className="max-w-2xl mx-auto flex justify-between items-center">
                 <h1 className="display text-2xl font-bold text-sage-800 dark:text-white tracking-tight flex items-center gap-2">
-                  <img src="/favicon.svg" alt="Hatim Pro Logo" className="w-8 h-8" referrerPolicy="no-referrer" />
-                  Hatim Pro
+                  <img src="/favicon.svg" alt="HatimPro Logo" className="w-8 h-8" referrerPolicy="no-referrer" />
+                  HatimPro
                 </h1>
                 <div className="flex items-center gap-2">
                   <button 

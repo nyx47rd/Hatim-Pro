@@ -809,8 +809,8 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
                   onClick={() => {
                     if (navigator.share) {
                       navigator.share({
-                        title: 'Hatim Pro Zikir',
-                        text: `Hatim Pro'da birlikte zikir çekelim! Oda kodu: ${activeTask?.id}`,
+                        title: 'HatimPro Zikir',
+                        text: `HatimPro'da birlikte zikir çekelim! Oda kodu: ${activeTask?.id}`,
                         url: window.location.origin
                       }).catch(console.error);
                     } else {

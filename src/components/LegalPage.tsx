@@ -40,7 +40,7 @@ export function LegalPage({ type, onBack }: LegalPageProps) {
             {isPrivacy ? (
               <>
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">1. Veri Toplama</h3>
-                <p className="mb-6 leading-relaxed">Hatim Pro, kullanıcı deneyimini geliştirmek amacıyla ad, e-posta adresi ve profil fotoğrafı gibi temel profil bilgilerinizi toplar. Ayrıca, uygulama içindeki hatim ve zikir ilerlemeleriniz bulut sunucularımızda (Firebase) güvenle saklanır.</p>
+                <p className="mb-6 leading-relaxed">HatimPro, kullanıcı deneyimini geliştirmek amacıyla ad, e-posta adresi ve profil fotoğrafı gibi temel profil bilgilerinizi toplar. Ayrıca, uygulama içindeki hatim ve zikir ilerlemeleriniz bulut sunucularımızda (Firebase) güvenle saklanır.</p>
                 
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">2. Veri Kullanımı</h3>
                 <p className="mb-6 leading-relaxed">Toplanan veriler yalnızca size hizmet sunmak, ilerlemenizi cihazlar arasında senkronize etmek ve arkadaşlarınızla ortak zikir odaları oluşturabilmeniz için kullanılır. Verileriniz kesinlikle üçüncü taraf reklam şirketleriyle paylaşılmaz.</p>
@@ -61,19 +61,19 @@ export function LegalPage({ type, onBack }: LegalPageProps) {
             ) : (
               <>
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">1. Hizmetin Kullanımı</h3>
-                <p className="mb-6 leading-relaxed">Hatim Pro uygulamasını kullanarak bu koşulları kabul etmiş sayılırsınız. Uygulama, kişisel ibadet takibi ve sosyal zikir odaları oluşturma amacıyla sunulmaktadır.</p>
+                <p className="mb-6 leading-relaxed">HatimPro uygulamasını kullanarak bu koşulları kabul etmiş sayılırsınız. Uygulama, kişisel ibadet takibi ve sosyal zikir odaları oluşturma amacıyla sunulmaktadır.</p>
                 
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">2. Kullanıcı Sorumlulukları</h3>
                 <p className="mb-6 leading-relaxed">Kullanıcılar, hesaplarının güvenliğinden kendileri sorumludur. Ortak zikir odalarında diğer kullanıcılara saygılı davranılması esastır. Rahatsız edici veya uygunsuz davranışlarda bulunan hesaplar askıya alınabilir.</p>
                 
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">3. Hizmet Kesintileri</h3>
-                <p className="mb-6 leading-relaxed">Hatim Pro, hizmetin kesintisiz çalışması için çaba gösterir ancak teknik arızalar, bakım çalışmaları veya mücbir sebeplerden dolayı oluşabilecek veri kayıpları veya kesintilerden sorumlu tutulamaz.</p>
+                <p className="mb-6 leading-relaxed">HatimPro, hizmetin kesintisiz çalışması için çaba gösterir ancak teknik arızalar, bakım çalışmaları veya mücbir sebeplerden dolayı oluşabilecek veri kayıpları veya kesintilerden sorumlu tutulamaz.</p>
                 
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">4. Fikri Mülkiyet</h3>
-                <p className="mb-6 leading-relaxed">Uygulamanın tasarımı, kodları ve içerikleri Hatim Pro'ya aittir. İzinsiz kopyalanamaz veya çoğaltılamaz.</p>
+                <p className="mb-6 leading-relaxed">Uygulamanın tasarımı, kodları ve içerikleri HatimPro'ya aittir. İzinsiz kopyalanamaz veya çoğaltılamaz.</p>
                 
                 <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">5. Değişiklikler</h3>
-                <p className="mb-6 leading-relaxed">Hatim Pro, bu kullanım koşullarını dilediği zaman değiştirme hakkını saklı tutar. Önemli değişiklikler kullanıcılara bildirilecektir.</p>
+                <p className="mb-6 leading-relaxed">HatimPro, bu kullanım koşullarını dilediği zaman değiştirme hakkını saklı tutar. Önemli değişiklikler kullanıcılara bildirilecektir.</p>
                 
                 <div className="mt-12 pt-6 border-t border-sage-100 dark:border-neutral-800 text-sm text-sage-500">
                   Son Güncelleme: 7 Mart 2026

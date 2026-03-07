@@ -34,12 +34,12 @@ export function DataDeletionPage({ onBack }: DataDeletionPageProps) {
           <div className="prose dark:prose-invert max-w-none text-sage-700 dark:text-neutral-300">
             <h3 className="text-xl font-bold text-sage-900 dark:text-white mb-4">Facebook Veri Silme Talimatları</h3>
             <p className="mb-6 leading-relaxed">
-              Hatim Pro, Facebook Platform Kuralları gereği, kullanıcılara verilerini silme hakkı tanır. Eğer Facebook hesabınızla giriş yaptıysanız ve verilerinizin silinmesini istiyorsanız, aşağıdaki adımları izleyebilirsiniz:
+              HatimPro, Facebook Platform Kuralları gereği, kullanıcılara verilerini silme hakkı tanır. Eğer Facebook hesabınızla giriş yaptıysanız ve verilerinizin silinmesini istiyorsanız, aşağıdaki adımları izleyebilirsiniz:
             </p>
 
             <h4 className="text-lg font-bold text-sage-900 dark:text-white mb-2">Yöntem 1: Uygulama İçinden Silme</h4>
             <ol className="list-decimal list-inside mb-6 space-y-2">
-              <li>Hatim Pro uygulamasını açın.</li>
+              <li>HatimPro uygulamasını açın.</li>
               <li><strong>Ayarlar</strong> menüsüne gidin.</li>
               <li>Sayfanın en altındaki "Tehlikeli Bölge" alanına gelin.</li>
               <li><strong>"Hesabı Sil"</strong> butonuna tıklayın ve onaylayın.</li>
@@ -50,9 +50,9 @@ export function DataDeletionPage({ onBack }: DataDeletionPageProps) {
             <ol className="list-decimal list-inside mb-6 space-y-2">
               <li>Facebook hesabınıza gidin ve <strong>Ayarlar ve Gizlilik</strong> &gt; <strong>Ayarlar</strong> menüsüne tıklayın.</li>
               <li>Sol menüden <strong>Uygulamalar ve İnternet Siteleri</strong> seçeneğine gidin.</li>
-              <li>Listede <strong>"Hatim Pro"</strong> uygulamasını bulun.</li>
+              <li>Listede <strong>"HatimPro"</strong> uygulamasını bulun.</li>
               <li><strong>"Kaldır"</strong> butonuna tıklayın.</li>
-              <li>Açılan pencerede "Hatim Pro tarafından paylaşılan gönderileri, videoları veya etkinlikleri sil" seçeneğini işaretleyip tekrar "Kaldır"a tıklayın.</li>
+              <li>Açılan pencerede "HatimPro tarafından paylaşılan gönderileri, videoları veya etkinlikleri sil" seçeneğini işaretleyip tekrar "Kaldır"a tıklayın.</li>
             </ol>
 
             <div className="bg-sage-50 dark:bg-neutral-800 p-4 rounded-xl border border-sage-100 dark:border-neutral-700 mt-8">
