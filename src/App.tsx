@@ -91,12 +91,13 @@ const recalculateTaskLogs = (logs: ReadingLog[], task: HatimTask) => {
 };
 
 import { LegalPage } from './components/LegalPage';
+import { DataDeletionPage } from './components/DataDeletionPage';
 
 const LazyZikirPage = React.lazy(() => import('./components/ZikirPage').then(module => ({ default: module.ZikirPage })));
 const LazyProfilePage = React.lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const LazyNotificationsPanel = React.lazy(() => import('./components/NotificationsPanel').then(module => ({ default: module.NotificationsPanel })));
 
-type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more';
+type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
@@ -109,6 +110,9 @@ export default function App() {
     }
     if (path === '/terms') {
       return 'terms';
+    }
+    if (path === '/data-deletion') {
+      return 'data-deletion';
     }
     return 'home';
   });
@@ -1751,6 +1755,16 @@ export default function App() {
                 <div className="fixed inset-0 z-50 bg-sage-50 dark:bg-black overflow-y-auto">
                   <LegalPage 
                     type="terms" 
+                    onBack={() => {
+                      setActiveView('settings');
+                      window.history.pushState({}, '', '/');
+                    }} 
+                  />
+                </div>
+              )}
+              {activeView === 'data-deletion' && (
+                <div className="fixed inset-0 z-50 bg-sage-50 dark:bg-black overflow-y-auto">
+                  <DataDeletionPage 
                     onBack={() => {
                       setActiveView('settings');
                       window.history.pushState({}, '', '/');
