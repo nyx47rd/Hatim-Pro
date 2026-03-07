@@ -222,7 +222,15 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
     if (user) {
       setIsCreating(true);
       try {
-        const newSessionId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        // Secure ID generation
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const array = new Uint8Array(6);
+        window.crypto.getRandomValues(array);
+        let newSessionId = '';
+        for (let i = 0; i < 6; i++) {
+          newSessionId += chars[array[i] % chars.length];
+        }
+
         await setDoc(doc(db, 'zikir_sessions', newSessionId), {
           host: user.uid,
           count: 0,

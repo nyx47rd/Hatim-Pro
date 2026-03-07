@@ -44,7 +44,7 @@ import { AuthModal } from './components/AuthModal';
 import { syncDataToFirebase, listenToFirebaseData } from './services/db';
 import { auth, db, storage } from './lib/firebase';
 import { signOut, deleteUser, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, linkWithPopup, GithubAuthProvider, OAuthProvider, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
-import { doc, deleteDoc, updateDoc, query, where, collection, onSnapshot } from 'firebase/firestore';
+import { doc, deleteDoc, updateDoc, query, where, collection, onSnapshot, getDoc, deleteField, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { QRCodeSVG } from 'qrcode.react';
 import { getFirebaseErrorMessage } from './lib/firebaseErrors';
@@ -658,13 +658,22 @@ export default function App() {
         return;
       }
       try {
+        // Fetch secret from Firestore private subcollection
+        const mfaDoc = await getDoc(doc(db, 'users', user.uid, 'private', 'mfa'));
+        const mfaSecret = mfaDoc.data()?.secret;
+
+        if (!mfaSecret) {
+          setPasswordChangeError("2FA yapılandırması bulunamadı.");
+          return;
+        }
+
         const totp = new OTPAuth.TOTP({
           issuer: "Hatim Pro",
           label: user.email,
           algorithm: "SHA1",
           digits: 6,
           period: 30,
-          secret: OTPAuth.Secret.fromBase32(data.totpSecret!),
+          secret: OTPAuth.Secret.fromBase32(mfaSecret),
         });
         const delta = totp.validate({ token: passwordChangeTotp, window: 1 });
         if (delta === null) {
@@ -672,6 +681,7 @@ export default function App() {
           return;
         }
       } catch (err) {
+        console.error("2FA verify error:", err);
         setPasswordChangeError("2FA doğrulaması sırasında bir hata oluştu.");
         return;
       }
@@ -706,13 +716,22 @@ export default function App() {
         return;
       }
       try {
+        // Fetch secret from Firestore private subcollection
+        const mfaDoc = await getDoc(doc(db, 'users', user.uid, 'private', 'mfa'));
+        const mfaSecret = mfaDoc.data()?.secret;
+
+        if (!mfaSecret) {
+          setPasswordResetError("2FA yapılandırması bulunamadı.");
+          return;
+        }
+
         const totp = new OTPAuth.TOTP({
           issuer: "Hatim Pro",
           label: user.email,
           algorithm: "SHA1",
           digits: 6,
           period: 30,
-          secret: OTPAuth.Secret.fromBase32(data.totpSecret!),
+          secret: OTPAuth.Secret.fromBase32(mfaSecret),
         });
         const delta = totp.validate({ token: passwordResetTotp, window: 1 });
         if (delta === null) {
@@ -720,6 +739,7 @@ export default function App() {
           return;
         }
       } catch (err) {
+        console.error("2FA verify error:", err);
         setPasswordResetError("2FA doğrulaması sırasında bir hata oluştu.");
         return;
       }
@@ -794,16 +814,29 @@ export default function App() {
       const delta = totp.validate({ token: totpCode, window: 1 });
       
       if (delta !== null) {
+        // Save secret to Firestore securely in a private subcollection
+        await setDoc(doc(db, 'users', user.uid, 'private', 'mfa'), {
+          secret: totpSecret,
+          enabled: true,
+          updatedAt: new Date().toISOString()
+        });
+
+        // Update main user doc to reflect MFA status (but not the secret)
+        await updateDoc(doc(db, 'users', user.uid), {
+          mfaEnabled: true
+        });
+
         setIsEnrolling2FA(false);
         setTotpSecret(null);
         setTotpCode('');
         setMfaSuccess('İki faktörlü doğrulama başarıyla etkinleştirildi.');
         setIsMfaEnrolled(true);
-        setData(prev => ({ ...prev, mfaEnabled: true, totpSecret: totpSecret }));
+        setData(prev => ({ ...prev, mfaEnabled: true }));
       } else {
         setMfaError("Girdiğiniz kod hatalı veya süresi dolmuş.");
       }
     } catch (error: any) {
+      console.error("2FA confirm error:", error);
       setMfaError("Doğrulama sırasında bir hata oluştu.");
     }
   };
@@ -813,10 +846,19 @@ export default function App() {
     setMfaError(null);
     setMfaSuccess(null);
     try {
+      // Remove secret from private subcollection
+      await deleteDoc(doc(db, 'users', user.uid, 'private', 'mfa'));
+
+      // Update main user doc
+      await updateDoc(doc(db, 'users', user.uid), {
+        mfaEnabled: false
+      });
+
       setMfaSuccess('İki faktörlü doğrulama devre dışı bırakıldı.');
       setIsMfaEnrolled(false);
-      setData(prev => ({ ...prev, mfaEnabled: false, totpSecret: undefined }));
+      setData(prev => ({ ...prev, mfaEnabled: false }));
     } catch (error: any) {
+      console.error("2FA disable error:", error);
       setMfaError("Devre dışı bırakılırken hata oluştu.");
     }
   };

@@ -22,7 +22,6 @@ export interface HatimData {
   tasks: HatimTask[];
   logs: ReadingLog[];
   mfaEnabled?: boolean;
-  totpSecret?: string;
 }
 
 export interface AppNotification {
