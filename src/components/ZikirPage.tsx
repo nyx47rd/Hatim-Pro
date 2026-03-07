@@ -37,6 +37,8 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
   const [mutualFollowers, setMutualFollowers] = useState<{uid: string, displayName: string, photoURL: string}[]>([]);
   
   // Create Task Form State
+  const [createModalTab, setCreateModalTab] = useState<'create' | 'join'>('create');
+  const [joinRoomCode, setJoinRoomCode] = useState('');
   const [newTaskName, setNewTaskName] = useState('Subhanallah');
   const [newTaskTarget, setNewTaskTarget] = useState<string>('');
   const [newTaskArabic, setNewTaskArabic] = useState<string>('');
@@ -264,9 +266,46 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
     }
   };
 
+  const handleJoinRoom = async () => {
+    playClick();
+    if (!joinRoomCode.trim() || !user) return;
+
+    setIsCreating(true);
+    try {
+      const roomCode = joinRoomCode.trim().toUpperCase();
+      const roomRef = doc(db, 'zikir_sessions', roomCode);
+      const roomSnap = await getDocs(query(collection(db, 'zikir_sessions'), where('__name__', '==', roomCode)));
+      
+      if (!roomSnap.empty) {
+        const roomData = roomSnap.docs[0].data() as ZikirTask;
+        if (!roomData.participants.includes(user.uid)) {
+          await updateDoc(roomRef, {
+            participants: [...roomData.participants, user.uid]
+          });
+        }
+        setActiveTaskId(roomCode);
+        setShowCreateModal(false);
+        setJoinRoomCode('');
+      } else {
+        setAlertConfig({
+          show: true,
+          title: 'Hata',
+          message: 'Böyle bir oda bulunamadı. Lütfen kodu kontrol edin.',
+          type: 'alert'
+        });
+      }
+    } catch (error) {
+      console.error("Error joining room:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const [invitedUsers, setInvitedUsers] = useState<string[]>([]);
+
   const handleInvite = async (inviteeUid: string) => {
     playClick();
-    if (!user || !activeTask || !profile) return;
+    if (!user || !activeTask || !profile || invitedUsers.includes(inviteeUid) || activeTask.participants.includes(inviteeUid)) return;
 
     try {
       const notificationId = `${activeTask.id}_${inviteeUid}_${Date.now()}`;
@@ -281,10 +320,21 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
         read: false,
         status: 'pending'
       });
-      alert('Davet gönderildi!');
+      setInvitedUsers(prev => [...prev, inviteeUid]);
+      setAlertConfig({
+        show: true,
+        title: 'Başarılı',
+        message: 'Davet gönderildi!',
+        type: 'alert'
+      });
     } catch (error) {
       console.error("Error sending invite:", error);
-      alert('Davet gönderilirken hata oluştu.');
+      setAlertConfig({
+        show: true,
+        title: 'Hata',
+        message: 'Davet gönderilirken hata oluştu.',
+        type: 'alert'
+      });
     }
   };
 
@@ -326,19 +376,21 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">Görevlerim</h2>
-          <button 
-            onClick={() => { playClick(); setShowCreateModal(true); }}
-            className="bg-white text-black p-2 rounded-full hover:bg-neutral-200 transition-colors"
-          >
-            <Plus size={24} />
-          </button>
+          {user && (
+            <button 
+              onClick={() => { playClick(); setShowCreateModal(true); }}
+              className="bg-white text-black p-2 rounded-full hover:bg-neutral-200 transition-colors"
+            >
+              <Plus size={24} />
+            </button>
+          )}
         </div>
 
         <div className="space-y-4">
           {displayTasks.length === 0 ? (
             <div className="text-center text-neutral-500 mt-10">
               <p>Henüz bir zikir göreviniz yok.</p>
-              <p className="text-sm mt-2">Yeni bir görev oluşturmak için + butonuna tıklayın.</p>
+              {user && <p className="text-sm mt-2">Yeni bir görev oluşturmak veya bir odaya katılmak için + butonuna tıklayın.</p>}
             </div>
           ) : (
             displayTasks.map(task => {
@@ -563,63 +615,124 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
               exit={{ scale: 0.9, y: 20 }}
               className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto"
             >
-              <h3 className="text-xl font-bold text-white mb-6">Yeni Zikir Görevi</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Zikir Adı</label>
-                  <input
-                    type="text"
-                    value={newTaskName}
-                    onChange={(e) => setNewTaskName(e.target.value)}
-                    placeholder="Örn: Subhanallah"
-                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Hedef Sayı (Opsiyonel)</label>
-                  <input
-                    type="number"
-                    value={newTaskTarget}
-                    onChange={(e) => setNewTaskTarget(e.target.value)}
-                    placeholder="Örn: 99"
-                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Arapça Okunuşu / Metni (Opsiyonel)</label>
-                  <input
-                    type="text"
-                    value={newTaskArabic}
-                    onChange={(e) => setNewTaskArabic(e.target.value)}
-                    placeholder="Örn: سُبْحَانَ ٱللَّٰهِ"
-                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors text-right"
-                    dir="auto"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Anlamı (Opsiyonel)</label>
-                  <input
-                    type="text"
-                    value={newTaskMeaning}
-                    onChange={(e) => setNewTaskMeaning(e.target.value)}
-                    placeholder="Örn: Allah noksan sıfatlardan münezzehtir"
-                    className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
-                  />
-                </div>
-
+              <div className="flex bg-neutral-800 rounded-xl p-1 mb-6">
                 <button
-                  onClick={handleCreateTask}
-                  disabled={isCreating || !newTaskName.trim()}
-                  className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-200 transition-colors disabled:opacity-50 mt-4"
+                  onClick={() => setCreateModalTab('create')}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${createModalTab === 'create' ? 'bg-neutral-700 text-white shadow' : 'text-neutral-400 hover:text-white'}`}
                 >
-                  {isCreating ? (
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    'Oluştur'
-                  )}
+                  Yeni Oluştur
+                </button>
+                <button
+                  onClick={() => setCreateModalTab('join')}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${createModalTab === 'join' ? 'bg-neutral-700 text-white shadow' : 'text-neutral-400 hover:text-white'}`}
+                >
+                  Odaya Katıl
                 </button>
               </div>
+              
+              {createModalTab === 'create' ? (
+                <div className="space-y-4">
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {[
+                      { name: 'Subhanallah', arabic: 'سُبْحَانَ ٱللَّٰهِ', meaning: 'Allah noksan sıfatlardan münezzehtir', target: 33 },
+                      { name: 'Elhamdulillah', arabic: 'ٱلْحَمْدُ لِلَّٰهِ', meaning: 'Hamd Allah\'a mahsustur', target: 33 },
+                      { name: 'Allahu Ekber', arabic: 'ٱللَّٰهُ أَكْبَرُ', meaning: 'Allah en büyüktür', target: 33 },
+                      { name: 'La ilahe illallah', arabic: 'لَا إِلٰهَ إِلَّا ٱللَّٰهُ', meaning: 'Allah\'tan başka ilah yoktur', target: 100 },
+                      { name: 'Estağfirullah', arabic: 'أَسْتَغْفِرُ ٱللَّٰهَ', meaning: 'Allah\'tan bağışlanma dilerim', target: 100 }
+                    ].map(z => (
+                      <button
+                        key={z.name}
+                        onClick={() => {
+                          setNewTaskName(z.name);
+                          setNewTaskArabic(z.arabic);
+                          setNewTaskMeaning(z.meaning);
+                          setNewTaskTarget(z.target.toString());
+                        }}
+                        className="whitespace-nowrap bg-neutral-800 hover:bg-neutral-700 text-xs font-bold px-3 py-2 rounded-lg transition-colors border border-neutral-700"
+                      >
+                        {z.name}
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Zikir Adı</label>
+                    <input
+                      type="text"
+                      value={newTaskName}
+                      onChange={(e) => setNewTaskName(e.target.value)}
+                      placeholder="Örn: Subhanallah"
+                      className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Hedef Sayı (Opsiyonel)</label>
+                    <input
+                      type="number"
+                      value={newTaskTarget}
+                      onChange={(e) => setNewTaskTarget(e.target.value)}
+                      placeholder="Örn: 99"
+                      className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Arapça Okunuşu / Metni (Opsiyonel)</label>
+                    <input
+                      type="text"
+                      value={newTaskArabic}
+                      onChange={(e) => setNewTaskArabic(e.target.value)}
+                      placeholder="Örn: سُبْحَانَ ٱللَّٰهِ"
+                      className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors text-right"
+                      dir="auto"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Anlamı (Opsiyonel)</label>
+                    <input
+                      type="text"
+                      value={newTaskMeaning}
+                      onChange={(e) => setNewTaskMeaning(e.target.value)}
+                      placeholder="Örn: Allah noksan sıfatlardan münezzehtir"
+                      className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleCreateTask}
+                    disabled={isCreating || !newTaskName.trim()}
+                    className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-200 transition-colors disabled:opacity-50 mt-4"
+                  >
+                    {isCreating ? (
+                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      'Oluştur'
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Oda Kodu</label>
+                    <input
+                      type="text"
+                      value={joinRoomCode}
+                      onChange={(e) => setJoinRoomCode(e.target.value.toUpperCase())}
+                      placeholder="Örn: A1B2C3"
+                      className="w-full bg-black border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white transition-colors font-mono tracking-widest uppercase"
+                    />
+                  </div>
+                  <button
+                    onClick={handleJoinRoom}
+                    disabled={isCreating || !joinRoomCode.trim()}
+                    className="w-full bg-white text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-200 transition-colors disabled:opacity-50 mt-4"
+                  >
+                    {isCreating ? (
+                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      'Odaya Katıl'
+                    )}
+                  </button>
+                </div>
+              )}
 
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -661,20 +774,32 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
                     <p>Davet edebileceğiniz karşılıklı takip ettiğiniz bir arkadaşınız bulunmuyor.</p>
                   </div>
                 ) : (
-                  mutualFollowers.map(friend => (
-                    <div key={friend.uid} className="flex items-center justify-between bg-black/50 p-3 rounded-2xl border border-neutral-800">
-                      <div className="flex items-center gap-3">
-                        <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
-                        <span className="font-bold text-white text-sm">{friend.displayName}</span>
+                  mutualFollowers.map(friend => {
+                    const isParticipant = activeTask?.participants.includes(friend.uid);
+                    const isInvited = invitedUsers.includes(friend.uid);
+                    
+                    return (
+                      <div key={friend.uid} className="flex items-center justify-between bg-black/50 p-3 rounded-2xl border border-neutral-800">
+                        <div className="flex items-center gap-3">
+                          <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
+                          <span className="font-bold text-white text-sm">{friend.displayName}</span>
+                        </div>
+                        <button
+                          onClick={() => handleInvite(friend.uid)}
+                          disabled={isParticipant || isInvited}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                            isParticipant 
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                              : isInvited 
+                                ? 'bg-neutral-800 text-neutral-400 border border-neutral-700' 
+                                : 'bg-white text-black hover:bg-neutral-200'
+                          }`}
+                        >
+                          {isParticipant ? 'Katıldı' : isInvited ? 'Davet Edildi' : 'Davet Et'}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleInvite(friend.uid)}
-                        className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors"
-                      >
-                        Davet Et
-                      </button>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
               

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, FormEvent, useRef } from 'react';
+import React, { useState, useEffect, useMemo, FormEvent, useRef, Suspense } from 'react';
 import useSound from 'use-sound';
 import { 
   BookOpen, 
@@ -88,9 +88,9 @@ const recalculateTaskLogs = (logs: ReadingLog[], task: HatimTask) => {
   };
 };
 
-import { ZikirPage } from './components/ZikirPage';
-import { ProfilePage } from './components/ProfilePage';
-import { NotificationsPanel } from './components/NotificationsPanel';
+const LazyZikirPage = React.lazy(() => import('./components/ZikirPage').then(module => ({ default: module.ZikirPage })));
+const LazyProfilePage = React.lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
+const LazyNotificationsPanel = React.lazy(() => import('./components/NotificationsPanel').then(module => ({ default: module.NotificationsPanel })));
 
 type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile';
 
@@ -1178,7 +1178,29 @@ export default function App() {
                 </div>
 
                 <button 
-                  onClick={() => { playClick(); signOut(auth); }}
+                  onClick={() => { 
+                    playClick(); 
+                    signOut(auth).then(() => {
+                      localStorage.removeItem(STORAGE_KEY);
+                      localStorage.removeItem('local_zikir_tasks');
+                      
+                      const initialTaskId = crypto.randomUUID();
+                      setData({
+                        tasks: [{
+                          id: initialTaskId,
+                          name: "Tam Hatim",
+                          startPage: 1,
+                          endPage: QURAN_TOTAL_PAGES,
+                          currentPage: 0,
+                          isCompleted: false,
+                          createdAt: new Date().toISOString()
+                        }],
+                        readHistory: []
+                      });
+                      
+                      setActiveView('home');
+                    }); 
+                  }}
                   className="w-full py-3 text-sage-600 font-bold bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors mt-2"
                 >
                   Çıkış Yap
@@ -1645,25 +1667,29 @@ export default function App() {
               {activeView === 'history' && renderHistory()}
               {activeView === 'settings' && renderSettings()}
               {activeView === 'profile' && (
-                <ProfilePage 
-                  username={profileUsername} 
-                  onBack={() => {
-                    setActiveView('more');
-                    window.history.pushState({}, '', '/');
-                  }} 
-                  playClick={playClick} 
-                />
+                <Suspense fallback={<div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-sage-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+                  <LazyProfilePage 
+                    username={profileUsername} 
+                    onBack={() => {
+                      setActiveView('more');
+                      window.history.pushState({}, '', '/');
+                    }} 
+                    playClick={playClick} 
+                  />
+                </Suspense>
               )}
               {activeView === 'zikir' && (
                 <div className="fixed inset-0 z-50 bg-black">
-                  <ZikirPage 
-                    onBack={() => {
-                      setActiveView('home');
-                      setZikirJoinSessionId(null);
-                    }} 
-                    playClick={playClick} 
-                    joinSessionId={zikirJoinSessionId}
-                  />
+                  <Suspense fallback={<div className="flex h-full items-center justify-center"><div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <LazyZikirPage 
+                      onBack={() => {
+                        setActiveView('home');
+                        setZikirJoinSessionId(null);
+                      }} 
+                      playClick={playClick} 
+                      joinSessionId={zikirJoinSessionId}
+                    />
+                  </Suspense>
                 </div>
               )}
             </main>
@@ -2134,15 +2160,17 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <NotificationsPanel 
-        isOpen={isNotificationsOpen} 
-        onClose={() => setIsNotificationsOpen(false)} 
-        onJoinSession={(sessionId) => {
-          setZikirJoinSessionId(sessionId);
-          setActiveView('zikir');
-        }}
-        playClick={playClick}
-      />
+      <Suspense fallback={null}>
+        <LazyNotificationsPanel 
+          isOpen={isNotificationsOpen} 
+          onClose={() => setIsNotificationsOpen(false)} 
+          onJoinSession={(sessionId) => {
+            setZikirJoinSessionId(sessionId);
+            setActiveView('zikir');
+          }}
+          playClick={playClick}
+        />
+      </Suspense>
     </div>
   );
 }
