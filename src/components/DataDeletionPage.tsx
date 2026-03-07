@@ -58,7 +58,7 @@ export function DataDeletionPage({ onBack }: DataDeletionPageProps) {
             <div className="bg-sage-50 dark:bg-neutral-800 p-4 rounded-xl border border-sage-100 dark:border-neutral-700 mt-8">
               <p className="text-sm font-medium text-sage-800 dark:text-white mb-2">Veri Silme Talep URL'si (Callback)</p>
               <p className="text-xs text-sage-600 dark:text-neutral-400 break-all">
-                https://ais-pre-qxh43iyfrarlfjutcuzhg5-37192790817.europe-west2.run.app/data-deletion
+                https://hatimpro.vercel.app/data-deletion
               </p>
             </div>
           </div>

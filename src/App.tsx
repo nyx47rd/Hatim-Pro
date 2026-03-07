@@ -943,9 +943,9 @@ export default function App() {
 
       <footer className="pt-8 pb-4 text-center text-xs text-sage-400 dark:text-neutral-500">
         <div className="flex justify-center gap-4 mb-2">
-          <button onClick={() => { setActiveView('privacy'); window.history.pushState({}, '', '/privacy'); }} className="hover:text-sage-600 dark:hover:text-neutral-300 transition-colors">Gizlilik Politikası</button>
+          <a href="/privacy" onClick={(e) => { e.preventDefault(); setActiveView('privacy'); window.history.pushState({}, '', '/privacy'); }} className="hover:text-sage-600 dark:hover:text-neutral-300 transition-colors">Gizlilik Politikası</a>
           <span>•</span>
-          <button onClick={() => { setActiveView('terms'); window.history.pushState({}, '', '/terms'); }} className="hover:text-sage-600 dark:hover:text-neutral-300 transition-colors">Kullanım Koşulları</button>
+          <a href="/terms" onClick={(e) => { e.preventDefault(); setActiveView('terms'); window.history.pushState({}, '', '/terms'); }} className="hover:text-sage-600 dark:hover:text-neutral-300 transition-colors">Kullanım Koşulları</a>
         </div>
         <p>© 2026 Hatim Pro. Tüm hakları saklıdır.</p>
       </footer>
