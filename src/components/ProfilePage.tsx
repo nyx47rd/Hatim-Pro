@@ -347,7 +347,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-black border border-white/10 w-full max-w-md rounded-3xl p-8 relative z-10"
+              className="bg-black border border-white/10 w-full max-w-md rounded-3xl p-8 relative z-10 overflow-y-auto max-h-[90vh]"
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold">Profili Düzenle</h3>

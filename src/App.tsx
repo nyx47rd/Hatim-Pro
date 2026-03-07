@@ -1729,7 +1729,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl"
+              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">İlerleme Kaydet</h3>
@@ -1792,7 +1792,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto h-[600px]"
+              className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-sage-800">Yeni Görev</h3>
@@ -1916,7 +1916,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center max-h-[90vh] overflow-y-auto"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={32} />
@@ -1959,7 +1959,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center max-h-[90vh] overflow-y-auto"
             >
               <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Info size={32} />
@@ -1994,7 +1994,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10"
+              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10 max-h-[90vh] overflow-y-auto"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={32} />
@@ -2037,7 +2037,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10"
+              className="bg-white dark:bg-black w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl text-center border border-white/10 max-h-[90vh] overflow-y-auto"
             >
               <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <RotateCcw size={32} />
@@ -2079,7 +2079,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl"
+              className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-3xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="w-16 h-16 bg-sage-50 text-sage-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Key size={32} />

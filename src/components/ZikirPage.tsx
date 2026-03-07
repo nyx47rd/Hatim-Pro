@@ -353,7 +353,7 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
                   className="bg-neutral-900 border border-neutral-800 rounded-3xl p-5 cursor-pointer relative overflow-hidden group"
                 >
                   <div className="flex justify-between items-start mb-3 relative z-10">
-                    <div>
+                    <div className="flex-1 pr-4">
                       <h3 className="text-lg font-bold text-white">{task.name}</h3>
                       <div className="flex items-center gap-3 mt-1 text-xs text-neutral-400">
                         <span className="flex items-center gap-1">
@@ -366,26 +366,26 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="flex flex-col items-end gap-3">
                       <span className="text-2xl font-mono font-bold text-white">{task.count}</span>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
+                        className="p-2 bg-neutral-800/50 text-neutral-400 rounded-full hover:text-red-500 hover:bg-red-500/10 transition-colors z-20"
+                        title="Görevi Sil"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
 
                   {task.target && (
-                    <div className="w-full bg-black rounded-full h-1.5 mt-4 relative z-10">
+                    <div className="w-full bg-black rounded-full h-1.5 mt-2 relative z-10">
                       <div 
                         className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" 
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   )}
-
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
-                    className="absolute top-4 right-4 p-2 bg-red-500/10 text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 z-20"
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </motion.div>
               );
             })
@@ -404,117 +404,119 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="flex-1 flex flex-col items-center justify-center p-6 space-y-8"
+        className="flex-1 flex flex-col items-center p-6 space-y-8 overflow-y-auto min-h-0"
       >
-        {/* Session Info */}
-        {activeTask.participants.length > 1 && (
-          <div className="bg-neutral-800/80 backdrop-blur-md rounded-2xl p-4 w-full max-w-sm border border-neutral-700">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-neutral-400 text-xs font-bold uppercase tracking-wider">Oda Kodu</span>
-              <div className="flex items-center gap-2">
-                <Users size={14} className="text-emerald-400" />
-                <span className="text-emerald-400 text-xs font-bold">{activeTask.participants.length} Kişi</span>
+        <div className="flex-1 flex flex-col items-center justify-center w-full space-y-8 min-h-min py-4">
+          {/* Session Info */}
+          {activeTask.participants.length > 1 && (
+            <div className="bg-neutral-800/80 backdrop-blur-md rounded-2xl p-4 w-full max-w-sm border border-neutral-700 shrink-0">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-neutral-400 text-xs font-bold uppercase tracking-wider">Oda Kodu</span>
+                <div className="flex items-center gap-2">
+                  <Users size={14} className="text-emerald-400" />
+                  <span className="text-emerald-400 text-xs font-bold">{activeTask.participants.length} Kişi</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between bg-black/50 rounded-xl p-3 border border-neutral-700">
+                <span className="text-xl font-mono font-bold text-white tracking-widest">{activeTask.id}</span>
+                <button onClick={copySessionId} className="text-neutral-400 hover:text-white transition-colors">
+                  {copied ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} />}
+                </button>
               </div>
             </div>
-            <div className="flex items-center justify-between bg-black/50 rounded-xl p-3 border border-neutral-700">
-              <span className="text-xl font-mono font-bold text-white tracking-widest">{activeTask.id}</span>
-              <button onClick={copySessionId} className="text-neutral-400 hover:text-white transition-colors">
-                {copied ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} />}
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Counter Display */}
-        <div className="relative">
-          <div className="w-64 h-64 rounded-full bg-black border-4 border-neutral-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-neutral-800/20 to-transparent pointer-events-none" />
-            <div className="text-center z-10">
-              <span className="block text-7xl font-mono font-bold text-white tracking-tighter tabular-nums">
-                {activeTask.count}
-              </span>
-              <span className="text-neutral-500 text-sm font-medium mt-2 block uppercase tracking-widest">
-                {activeTask.name}
-              </span>
-              {activeTask.target && (
-                <span className="text-emerald-500/80 text-xs font-bold mt-1 block">
-                  Hedef: {activeTask.target}
+          {/* Counter Display */}
+          <div className="relative shrink-0">
+            <div className="w-64 h-64 rounded-full bg-black border-4 border-neutral-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-neutral-800/20 to-transparent pointer-events-none" />
+              <div className="text-center z-10">
+                <span className="block text-7xl font-mono font-bold text-white tracking-tighter tabular-nums">
+                  {activeTask.count}
                 </span>
+                <span className="text-neutral-500 text-sm font-medium mt-2 block uppercase tracking-widest">
+                  {activeTask.name}
+                </span>
+                {activeTask.target && (
+                  <span className="text-emerald-500/80 text-xs font-bold mt-1 block">
+                    Hedef: {activeTask.target}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Progress Ring */}
+            {activeTask.target && (
+              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-neutral-800"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray={`${progress * 3.01} 301`}
+                  className="text-emerald-500 transition-all duration-300"
+                />
+              </svg>
+            )}
+          </div>
+
+          {/* Arabic Text & Meaning */}
+          {(activeTask.arabicText || activeTask.meaning) && (
+            <div className="w-full max-w-xs text-center space-y-2 mb-2 shrink-0">
+              {activeTask.arabicText && (
+                <p className="text-2xl font-bold text-emerald-400" dir="rtl" style={{ fontFamily: "'Amiri', 'Scheherazade New', serif" }}>
+                  {activeTask.arabicText}
+                </p>
+              )}
+              {activeTask.meaning && (
+                <p className="text-sm text-neutral-400 italic">
+                  "{activeTask.meaning}"
+                </p>
               )}
             </div>
-          </div>
-          
-          {/* Progress Ring */}
-          {activeTask.target && (
-            <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="48"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-neutral-800"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="48"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeDasharray={`${progress * 3.01} 301`}
-                className="text-emerald-500 transition-all duration-300"
-              />
-            </svg>
           )}
-        </div>
 
-        {/* Arabic Text & Meaning */}
-        {(activeTask.arabicText || activeTask.meaning) && (
-          <div className="w-full max-w-xs text-center space-y-2 mb-2">
-            {activeTask.arabicText && (
-              <p className="text-2xl font-bold text-emerald-400" dir="rtl" style={{ fontFamily: "'Amiri', 'Scheherazade New', serif" }}>
-                {activeTask.arabicText}
-              </p>
+          {/* Main Button */}
+          <button
+            onClick={handleIncrement}
+            className="w-full max-w-xs bg-white text-black font-bold text-xl py-6 rounded-full shadow-lg active:scale-95 transition-transform hover:bg-neutral-200 shrink-0"
+          >
+            Zikir Çek
+          </button>
+
+          {/* Controls */}
+          <div className="flex gap-4 w-full max-w-xs shrink-0">
+            {(!user || activeTask.host === user?.uid || activeTask.host === 'guest') && (
+              <button
+                onClick={handleReset}
+                className="flex-1 bg-neutral-900 border border-neutral-800 text-white py-4 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-neutral-800 transition-colors"
+              >
+                <RotateCcw size={20} className="text-neutral-400" />
+                <span className="text-xs font-bold">Sıfırla</span>
+              </button>
             )}
-            {activeTask.meaning && (
-              <p className="text-sm text-neutral-400 italic">
-                "{activeTask.meaning}"
-              </p>
+            
+            {user && (
+              <button
+                onClick={() => { playClick(); setShowInviteModal(true); }}
+                className="flex-1 bg-neutral-900 border border-neutral-800 text-white py-4 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-neutral-800 transition-colors"
+              >
+                <Share2 size={20} className="text-blue-400" />
+                <span className="text-xs font-bold">Davet Et</span>
+              </button>
             )}
           </div>
-        )}
-
-        {/* Main Button */}
-        <button
-          onClick={handleIncrement}
-          className="w-full max-w-xs bg-white text-black font-bold text-xl py-6 rounded-full shadow-lg active:scale-95 transition-transform hover:bg-neutral-200"
-        >
-          Zikir Çek
-        </button>
-
-        {/* Controls */}
-        <div className="flex gap-4 w-full max-w-xs">
-          {(!user || activeTask.host === user?.uid || activeTask.host === 'guest') && (
-            <button
-              onClick={handleReset}
-              className="flex-1 bg-neutral-900 border border-neutral-800 text-white py-4 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-neutral-800 transition-colors"
-            >
-              <RotateCcw size={20} className="text-neutral-400" />
-              <span className="text-xs font-bold">Sıfırla</span>
-            </button>
-          )}
-          
-          {user && (
-            <button
-              onClick={() => { playClick(); setShowInviteModal(true); }}
-              className="flex-1 bg-neutral-900 border border-neutral-800 text-white py-4 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-neutral-800 transition-colors"
-            >
-              <Share2 size={20} className="text-blue-400" />
-              <span className="text-xs font-bold">Davet Et</span>
-            </button>
-          )}
         </div>
       </motion.div>
     );
@@ -559,7 +561,7 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-xl font-bold text-white mb-6">Yeni Zikir Görevi</h3>
               
@@ -715,7 +717,7 @@ export const ZikirPage: React.FC<ZikirPageProps> = ({ onBack, playClick, joinSes
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl"
+              className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-xl font-bold text-white mb-2">{alertConfig.title}</h3>
               <p className="text-neutral-400 text-sm mb-8 leading-relaxed">

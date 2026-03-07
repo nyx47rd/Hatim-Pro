@@ -50,8 +50,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Ensure profile exists
         const profileSnap = await getDoc(profileRef);
         if (!profileSnap.exists()) {
+          const baseName = user.displayName 
+            ? user.displayName.toLowerCase().replace(/[^a-z0-9]/g, '') 
+            : (user.email ? user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') : 'user');
+          const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+          const generatedUsername = `${baseName}${randomSuffix}`.substring(0, 20);
+
           const newProfile: UserProfile = {
             uid: user.uid,
+            username: generatedUsername,
             displayName: user.displayName || 'İsimsiz Kullanıcı',
             photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
             following: [],
