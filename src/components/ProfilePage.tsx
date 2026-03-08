@@ -14,7 +14,8 @@ import {
   Star,
   Clock,
   BookOpen,
-  RotateCcw
+  RotateCcw,
+  Flame
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../lib/firebase';
@@ -32,6 +33,15 @@ import {
   limit,
   onSnapshot
 } from 'firebase/firestore';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 
 interface ProfilePageProps {
   username?: string;
@@ -62,6 +72,28 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
   const [error, setError] = useState<string | null>(null);
 
   const [followersCount, setFollowersCount] = useState(0);
+
+  // Calculate chart data
+  const chartData = React.useMemo(() => {
+    if (!profile?.data?.logs) return [];
+    
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    return last7Days.map(date => {
+      const pages = profile.data.logs
+        .filter((log: any) => log.date.startsWith(date))
+        .reduce((sum: number, log: any) => sum + log.pagesRead, 0);
+      
+      return {
+        date: new Date(date).toLocaleDateString('tr-TR', { weekday: 'short' }),
+        pages
+      };
+    });
+  }, [profile]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -293,6 +325,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
           <p className="text-white/60 text-sm mb-4">@{profile?.username || 'kullaniciadi'}</p>
           {profile?.bio && <p className="text-sm text-white/80 max-w-sm mb-6">{profile.bio}</p>}
           
+          {/* XP and Streak Badges */}
+          <div className="flex gap-4 mb-6">
+            <div className="flex items-center gap-2 bg-orange-500/20 text-orange-500 px-4 py-2 rounded-full border border-orange-500/20">
+              <Flame size={20} fill="currentColor" />
+              <span className="font-bold">{profile?.stats?.streak || 0} Gün Seri</span>
+            </div>
+            <div className="flex items-center gap-2 bg-yellow-500/20 text-yellow-500 px-4 py-2 rounded-full border border-yellow-500/20">
+              <Star size={20} fill="currentColor" />
+              <span className="font-bold">{profile?.stats?.xp || 0} XP</span>
+            </div>
+          </div>
+          
           <div className="flex gap-8 mb-8">
             <div className="text-center">
               <p className="text-lg font-bold">{profile?.following?.length || 0}</p>
@@ -343,6 +387,36 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
               <span className="text-xs font-bold uppercase tracking-wider">Zikir</span>
             </div>
             <p className="text-2xl font-bold">{profile?.stats?.totalZikir || 0}</p>
+          </div>
+        </div>
+
+        {/* Reading Chart */}
+        <div className="bg-white/5 rounded-3xl p-6 border border-white/10 mb-8">
+          <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+            <TrendingUp size={20} className="text-sage-500" />
+            Son 7 Gün Okuma
+          </h3>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#666', fontSize: 12 }} 
+                  dy={10}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(255,255,255,0.1)' }}
+                  contentStyle={{ backgroundColor: '#1a1a1a', border: 'none', borderRadius: '12px' }}
+                />
+                <Bar dataKey="pages" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.pages > 0 ? '#4ade80' : '#333'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

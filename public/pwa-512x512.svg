@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
     </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
   </defs>
-  <rect width="512" height="512" fill="#f0fdf4" />
-  <path d="M256 80L315.5 210.5L456 231L356 331L379.5 471.5L256 405.5L132.5 471.5L156 331L56 231L196.5 210.5L256 80Z" fill="url(#grad)" />
-  <circle cx="256" cy="210" r="25" fill="#fbbf24" opacity="0.9" />
+  <path d="M256 32l68.2 138.2 152.5 22.2-110.4 107.6 26.1 151.9L256 380.2 119.6 451.9l26.1-151.9L35.3 192.4l152.5-22.2L256 32z" fill="url(#grad1)" stroke="white" stroke-width="24" stroke-linejoin="round" filter="url(#shadow)"/>
 </svg>

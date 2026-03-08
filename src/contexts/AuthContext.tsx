@@ -9,21 +9,7 @@ import {
 import { auth, db } from '../lib/firebase';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
-interface UserProfile {
-  uid: string;
-  username?: string;
-  displayName?: string;
-  photoURL?: string;
-  bio?: string;
-  following?: string[];
-  followers?: string[];
-  stats?: {
-    totalHatim?: number;
-    totalZikir?: number;
-    totalReadPages?: number;
-    streak?: number;
-  };
-}
+import { UserProfile } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -63,7 +49,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
             following: [],
             followers: [],
-            stats: { totalHatim: 0, totalZikir: 0, streak: 0 }
+            stats: { 
+              totalHatim: 0, 
+              totalZikir: 0, 
+              totalReadPages: 0,
+              streak: 0,
+              xp: 0
+            }
           };
           await setDoc(profileRef, newProfile);
         }

@@ -35,7 +35,8 @@ import {
   ChevronLeft,
   Bell,
   Shield,
-  Book
+  Book,
+  Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -96,9 +97,10 @@ import { GoogleOneTap } from './components/GoogleOneTap';
 
 const LazyZikirPage = React.lazy(() => import('./components/ZikirPage').then(module => ({ default: module.ZikirPage })));
 const LazyProfilePage = React.lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
+const LazyLeaderboardPage = React.lazy(() => import('./components/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
 const LazyNotificationsPanel = React.lazy(() => import('./components/NotificationsPanel').then(module => ({ default: module.NotificationsPanel })));
 
-type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion';
+type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion' | 'leaderboard';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
@@ -1798,6 +1800,13 @@ export default function App() {
                     <span className="font-bold text-sage-800 dark:text-white">Profil</span>
                   </button>
                   <button 
+                    onClick={() => { playClick(); setActiveView('leaderboard'); }} 
+                    className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <Trophy className="text-sage-600 dark:text-white" size={24} />
+                    <span className="font-bold text-sage-800 dark:text-white">Liderlik Tablosu</span>
+                  </button>
+                  <button 
                     onClick={() => { playClick(); setActiveView('settings'); }} 
                     className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
                   >
@@ -1810,16 +1819,31 @@ export default function App() {
               {activeView === 'history' && renderHistory()}
               {activeView === 'settings' && renderSettings()}
               {activeView === 'profile' && (
-                <Suspense fallback={<div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-sage-500 border-t-transparent rounded-full animate-spin"></div></div>}>
-                  <LazyProfilePage 
-                    username={profileUsername} 
-                    onBack={() => {
-                      setActiveView('more');
-                      window.history.pushState({}, '', '/');
-                    }} 
-                    playClick={playClick} 
-                  />
-                </Suspense>
+                <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
+                  <Suspense fallback={<div className="flex h-full items-center justify-center"><div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <LazyProfilePage 
+                      username={profileUsername} 
+                      onBack={() => {
+                        setActiveView('more');
+                        window.history.pushState({}, '', '/');
+                      }} 
+                      playClick={playClick} 
+                    />
+                  </Suspense>
+                </div>
+              )}
+              {activeView === 'leaderboard' && (
+                <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
+                  <Suspense fallback={<div className="flex h-full items-center justify-center"><div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <LazyLeaderboardPage 
+                      onBack={() => {
+                        playClick();
+                        setActiveView('more');
+                      }} 
+                      playClick={playClick} 
+                    />
+                  </Suspense>
+                </div>
               )}
               {activeView === 'zikir' && (
                 <div className="fixed inset-0 z-50 bg-black">

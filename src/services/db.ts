@@ -11,12 +11,45 @@ export const syncDataToFirebase = async (userId: string, data: HatimData) => {
     const totalHatim = data.tasks.filter(t => t.isCompleted).length;
     const totalReadPages = data.logs.reduce((sum, log) => sum + log.pagesRead, 0);
     
+    // Calculate streak
+    const uniqueDates = Array.from(new Set(data.logs.map(log => log.date.split('T')[0]))).sort().reverse();
+    let streak = 0;
+    
+    if (uniqueDates.length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      
+      if (uniqueDates[0] === today || uniqueDates[0] === yesterday) {
+        streak = 1;
+        let currentDate = new Date(uniqueDates[0]);
+        
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const prevDate = new Date(uniqueDates[i]);
+          // Calculate difference in days
+          const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
+          
+          if (diffDays === 1) {
+            streak++;
+            currentDate = prevDate;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    const xp = totalReadPages * 10 + (streak * 5);
+
     await setDoc(docRef, { 
       data, 
       updatedAt: new Date().toISOString(),
       stats: {
         totalHatim,
-        totalReadPages
+        totalReadPages,
+        streak,
+        xp,
+        lastReadingDate: uniqueDates[0] || null
       }
     }, { merge: true });
   } catch (error) {

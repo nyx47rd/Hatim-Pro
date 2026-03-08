@@ -38,3 +38,23 @@ export interface AppNotification {
   read: boolean;
   status?: 'pending' | 'accepted' | 'declined';
 }
+
+export interface UserStats {
+  totalHatim: number;
+  totalZikir: number;
+  totalReadPages: number;
+  streak: number;
+  xp: number;
+  lastReadingDate?: string;
+}
+
+export interface UserProfile {
+  uid: string;
+  username?: string;
+  displayName?: string;
+  photoURL?: string;
+  bio?: string;
+  following?: string[];
+  followers?: string[];
+  stats?: UserStats;
+}
