@@ -47,6 +47,11 @@
 
 body {
   @apply bg-black text-white font-sans transition-colors duration-300;
+  /* Ensure One Tap has space at the bottom on mobile */
+  padding-bottom: env(safe-area-inset-bottom);
+  min-height: 100vh;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 .serif {
