@@ -254,15 +254,12 @@ export const StatsPage: React.FC<StatsPageProps> = ({ data, onBack, playClick })
             </div>
             <div className="flex-1">
               <p className="text-sm text-white/60 mb-2">
-                {stats.completedTasks > 0 
-                  ? `Toplam görevlerin %${stats.completionRate} kadarı tamamlandı.` 
-                  : `${stats.activeTaskName} görevinin %${stats.completionRate} kadarı tamamlandı.`
-                }
+                Tüm görevlerin %{stats.completionRate} kadarı tamamlandı.
               </p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                 <span className="text-xs font-bold uppercase tracking-wider">
-                  {stats.completedTasks > 0 ? 'Başarı Oranı' : 'Aktif Görev İlerlemesi'}
+                  Genel Başarı Oranı
                 </span>
               </div>
             </div>

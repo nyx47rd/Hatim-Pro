@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, FormEvent, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, FormEvent, useRef, Suspense, Component, ReactNode } from 'react';
 import useSound from 'use-sound';
 import { 
   BookOpen, 
@@ -104,8 +104,8 @@ const LazyNotificationsPanel = React.lazy(() => import('./components/Notificatio
 
 type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion' | 'leaderboard' | 'stats';
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
-  constructor(props: {children: React.ReactNode}) {
+class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: ReactNode}) {
     super(props);
     this.state = { hasError: false };
   }
@@ -1353,6 +1353,7 @@ function AppContent() {
                       
                       const initialTaskId = crypto.randomUUID();
                       setData({
+                        activeTaskId: initialTaskId,
                         tasks: [{
                           id: initialTaskId,
                           name: "Tam Hatim",
@@ -1977,7 +1978,7 @@ function AppContent() {
             </main>
 
             {/* Bottom Navbar */}
-            {activeView !== 'zikir' && activeView !== 'profile' && activeView !== 'more' && (
+            {activeView !== 'zikir' && activeView !== 'profile' && (
               <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-sage-200 dark:border-white/10 px-8 py-3 pb-5 z-40">
                 <div className="max-w-sm mx-auto flex justify-between items-center">
                   <button 
