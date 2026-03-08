@@ -62,7 +62,18 @@ export const StatsPage: React.FC<StatsPageProps> = ({ data, onBack, playClick })
     // Completion stats
     const totalTasks = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.isCompleted).length;
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    // Page-based progress for the active task
+    const activeTask = data.tasks.find(t => t.id === data.activeTaskId);
+    let pageProgress = 0;
+    if (activeTask) {
+      const totalPagesInTask = activeTask.endPage - activeTask.startPage + 1;
+      pageProgress = Math.min(100, Math.round((activeTask.currentPage / totalPagesInTask) * 100));
+    }
+
+    const completionRate = completedTasks > 0 
+      ? Math.round((completedTasks / totalTasks) * 100) 
+      : pageProgress;
 
     return {
       totalPages,
@@ -71,7 +82,8 @@ export const StatsPage: React.FC<StatsPageProps> = ({ data, onBack, playClick })
       dayData,
       trendData,
       completionRate,
-      completedTasks
+      completedTasks,
+      activeTaskName: activeTask?.name || 'Hatim'
     };
   }, [data]);
 
@@ -243,10 +255,17 @@ export const StatsPage: React.FC<StatsPageProps> = ({ data, onBack, playClick })
               </div>
             </div>
             <div className="flex-1">
-              <p className="text-sm text-white/60 mb-2">Toplam görevlerin %{stats.completionRate} kadarı tamamlandı.</p>
+              <p className="text-sm text-white/60 mb-2">
+                {stats.completedTasks > 0 
+                  ? `Toplam görevlerin %${stats.completionRate} kadarı tamamlandı.` 
+                  : `${stats.activeTaskName} görevinin %${stats.completionRate} kadarı tamamlandı.`
+                }
+              </p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                <span className="text-xs font-bold uppercase tracking-wider">Başarı Oranı</span>
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  {stats.completedTasks > 0 ? 'Başarı Oranı' : 'Aktif Görev İlerlemesi'}
+                </span>
               </div>
             </div>
           </div>

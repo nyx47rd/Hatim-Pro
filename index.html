@@ -23,6 +23,41 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Robust Chunk Error & Black Screen Detection
+      (function() {
+        // 1. Listen for global errors (including chunk loading errors)
+        window.addEventListener('error', function(e) {
+          if (e.message && (e.message.indexOf('chunk') > -1 || e.message.indexOf('Loading') > -1)) {
+            console.warn('Chunk error detected, reloading...', e);
+            window.location.reload();
+          }
+        }, true);
+
+        // 2. Listen for unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+          if (e.reason && e.reason.message && e.reason.message.indexOf('chunk') > -1) {
+            console.warn('Unhandled chunk rejection, reloading...', e);
+            window.location.reload();
+          }
+        });
+
+        // 3. Black Screen Detection: If root is empty after 6 seconds, something went wrong
+        setTimeout(function() {
+          var root = document.getElementById('root');
+          if (root && root.innerHTML.trim() === '') {
+            console.error('Black screen detected (empty root), attempting recovery reload...');
+            // Only reload if we haven't reloaded recently to avoid infinite loops
+            var lastReload = sessionStorage.getItem('last_recovery_reload');
+            var now = Date.now();
+            if (!lastReload || (now - parseInt(lastReload)) > 30000) {
+              sessionStorage.setItem('last_recovery_reload', now.toString());
+              window.location.reload();
+            }
+          }
+        }, 6000);
+      })();
+    </script>
   </body>
 </html>
 
