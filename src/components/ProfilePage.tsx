@@ -408,7 +408,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
                 />
                 <Tooltip 
                   cursor={{ fill: 'rgba(255,255,255,0.1)' }}
-                  contentStyle={{ backgroundColor: '#1a1a1a', border: 'none', borderRadius: '12px' }}
+                  contentStyle={{ 
+                    backgroundColor: '#1a1a1a', 
+                    border: '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '12px',
+                    color: '#fff'
+                  }}
+                  itemStyle={{ color: '#fff' }}
+                  labelStyle={{ color: '#888', marginBottom: '4px' }}
                 />
                 <Bar dataKey="pages" radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, index) => (

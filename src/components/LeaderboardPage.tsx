@@ -15,6 +15,7 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack, playCl
   const { user } = useAuth();
   const [leaders, setLeaders] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLeaders = async () => {
@@ -28,8 +29,13 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack, playCl
         const snap = await getDocs(q);
         const fetchedLeaders = snap.docs.map(doc => ({ ...doc.data(), uid: doc.id } as UserProfile));
         setLeaders(fetchedLeaders);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching leaderboard:", error);
+        if (error.message?.includes('index')) {
+          setError("Liderlik tablosu henüz hazır değil (İndeks oluşturuluyor). Lütfen daha sonra tekrar deneyin.");
+        } else {
+          setError("Liderlik tablosu yüklenirken bir hata oluştu.");
+        }
       } finally {
         setLoading(false);
       }
@@ -60,6 +66,16 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack, playCl
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 px-6">
+            <p className="text-white/60 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-white text-black px-6 py-2 rounded-xl font-bold"
+            >
+              Yeniden Dene
+            </button>
           </div>
         ) : (
           <div className="space-y-3">

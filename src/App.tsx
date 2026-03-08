@@ -36,7 +36,8 @@ import {
   Bell,
   Shield,
   Book,
-  Trophy
+  Trophy,
+  BarChart2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HatimData, ReadingLog, HatimTask } from './types';
@@ -98,9 +99,10 @@ import { GoogleOneTap } from './components/GoogleOneTap';
 const LazyZikirPage = React.lazy(() => import('./components/ZikirPage').then(module => ({ default: module.ZikirPage })));
 const LazyProfilePage = React.lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const LazyLeaderboardPage = React.lazy(() => import('./components/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
+const LazyStatsPage = React.lazy(() => import('./components/StatsPage').then(module => ({ default: module.StatsPage })));
 const LazyNotificationsPanel = React.lazy(() => import('./components/NotificationsPanel').then(module => ({ default: module.NotificationsPanel })));
 
-type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion' | 'leaderboard';
+type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion' | 'leaderboard' | 'stats';
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
@@ -130,6 +132,17 @@ export default function App() {
   });
 
   const { user, profile, loading: authLoading } = useAuth();
+
+  // Auto-reload on chunk errors
+  useEffect(() => {
+    const handleError = (e: ErrorEvent) => {
+      if (e.message.includes('Loading chunk') || e.message.includes('CSS chunk')) {
+        window.location.reload();
+      }
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
   
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
@@ -221,6 +234,15 @@ export default function App() {
       logs: [],
     };
   });
+
+  // Ensure XP is synced if missing
+  useEffect(() => {
+    if (user && !authLoading && data.logs.length > 0) {
+      if (profile && (!profile.stats?.xp || profile.stats.xp === 0)) {
+        syncDataToFirebase(user.uid, data);
+      }
+    }
+  }, [user, authLoading, profile, data]);
 
   const [isAddLogOpen, setIsAddLogOpen] = useState(false);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
@@ -1807,6 +1829,13 @@ export default function App() {
                     <span className="font-bold text-sage-800 dark:text-white">Liderlik Tablosu</span>
                   </button>
                   <button 
+                    onClick={() => { playClick(); setActiveView('stats'); }} 
+                    className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <BarChart2 className="text-sage-600 dark:text-white" size={24} />
+                    <span className="font-bold text-sage-800 dark:text-white">İstatistikler</span>
+                  </button>
+                  <button 
                     onClick={() => { playClick(); setActiveView('settings'); }} 
                     className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-sage-100 dark:border-neutral-800 shadow-sm hover:bg-sage-50 dark:hover:bg-neutral-800 transition-colors"
                   >
@@ -1836,6 +1865,20 @@ export default function App() {
                 <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
                   <Suspense fallback={<div className="flex h-full items-center justify-center"><div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
                     <LazyLeaderboardPage 
+                      onBack={() => {
+                        playClick();
+                        setActiveView('more');
+                      }} 
+                      playClick={playClick} 
+                    />
+                  </Suspense>
+                </div>
+              )}
+              {activeView === 'stats' && (
+                <div className="fixed inset-0 z-50 bg-black overflow-y-auto">
+                  <Suspense fallback={<div className="flex h-full items-center justify-center"><div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <LazyStatsPage 
+                      data={data}
                       onBack={() => {
                         playClick();
                         setActiveView('more');
