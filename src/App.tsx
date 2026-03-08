@@ -104,7 +104,47 @@ const LazyNotificationsPanel = React.lazy(() => import('./components/Notificatio
 
 type View = 'home' | 'tasks' | 'history' | 'settings' | 'zikir' | 'profile' | 'privacy' | 'terms' | 'more' | 'data-deletion' | 'leaderboard' | 'stats';
 
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("App Crash:", error, errorInfo);
+    // If it's a chunk error, reload
+    if (error.message && error.message.toLowerCase().includes('chunk')) {
+      window.location.reload();
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-xl font-bold text-white mb-4">Bir şeyler ters gitti</h1>
+          <p className="text-white/60 mb-6">Uygulama yüklenirken bir sorun oluştu.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-white text-black px-8 py-3 rounded-2xl font-bold"
+          >
+            Yeniden Yükle
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+}
+
+function AppContent() {
   const [activeView, setActiveView] = useState<View>(() => {
     const path = window.location.pathname;
     if (path.startsWith('/@')) {

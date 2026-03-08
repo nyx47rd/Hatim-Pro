@@ -63,17 +63,15 @@ export const StatsPage: React.FC<StatsPageProps> = ({ data, onBack, playClick })
     const totalTasks = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.isCompleted).length;
     
-    // Page-based progress for the active task
-    const activeTask = data.tasks.find(t => t.id === data.activeTaskId);
-    let pageProgress = 0;
-    if (activeTask) {
-      const totalPagesInTask = activeTask.endPage - activeTask.startPage + 1;
-      pageProgress = Math.min(100, Math.round((activeTask.currentPage / totalPagesInTask) * 100));
-    }
+    // Page-based progress across all tasks
+    const totalPagesRead = logs.reduce((sum, log) => sum + log.pagesRead, 0);
+    const totalPagesToRead = data.tasks.reduce((sum, t) => sum + (t.endPage - t.startPage + 1), 0);
+    
+    const completionRate = totalPagesToRead > 0 
+      ? Math.round((totalPagesRead / totalPagesToRead) * 100) 
+      : 0;
 
-    const completionRate = completedTasks > 0 
-      ? Math.round((completedTasks / totalTasks) * 100) 
-      : pageProgress;
+    const activeTask = data.tasks.find(t => t.id === data.activeTaskId);
 
     return {
       totalPages,
