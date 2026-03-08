@@ -92,6 +92,7 @@ const recalculateTaskLogs = (logs: ReadingLog[], task: HatimTask) => {
 
 import { LegalPage } from './components/LegalPage';
 import { DataDeletionPage } from './components/DataDeletionPage';
+import { GoogleOneTap } from './components/GoogleOneTap';
 
 const LazyZikirPage = React.lazy(() => import('./components/ZikirPage').then(module => ({ default: module.ZikirPage })));
 const LazyProfilePage = React.lazy(() => import('./components/ProfilePage').then(module => ({ default: module.ProfilePage })));
@@ -1667,6 +1668,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-sage-50 dark:bg-black">
+      <GoogleOneTap />
       <AnimatePresence mode="wait">
         {showSplash || authLoading ? (
           <motion.div
