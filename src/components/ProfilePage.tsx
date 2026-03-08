@@ -112,6 +112,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ username, onBack, play
         await updateDoc(currentUserRef, { following: arrayRemove(profile.uid) });
       } else {
         await updateDoc(currentUserRef, { following: arrayUnion(profile.uid) });
+        
+        // Send notification
+        try {
+          const notificationId = `follow_${user.uid}_${profile.uid}`;
+          await setDoc(doc(db, 'notifications', notificationId), {
+            userId: profile.uid,
+            type: 'new_follower',
+            senderId: user.uid,
+            senderName: currentUserProfile.displayName || 'Bir kullanıcı',
+            createdAt: new Date().toISOString(),
+            read: false
+          });
+        } catch (err) {
+          console.error("Error sending follow notification:", err);
+        }
       }
     } catch (e) {
       console.error("Follow error", e);

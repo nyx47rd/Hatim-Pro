@@ -125,34 +125,67 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
                     className={`p-4 rounded-2xl border ${notif.read ? 'bg-sage-50 dark:bg-neutral-800/50 border-sage-100 dark:border-neutral-800' : 'bg-white dark:bg-neutral-800 border-sage-300 dark:border-sage-700 shadow-sm'}`}
                     onClick={() => !notif.read && markAsRead(notif.id)}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-sm text-sage-800 dark:text-white">
-                        <span className="font-bold">{notif.senderName}</span> sizi <span className="font-bold">{notif.sessionName}</span> zikrine davet etti.
-                      </p>
-                    </div>
-                    <p className="text-xs text-sage-500 dark:text-sage-400 mb-3">
-                      {new Date(notif.createdAt).toLocaleString('tr-TR')}
-                    </p>
-                    
-                    {notif.status === 'pending' ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleAccept(notif); }}
-                          className="flex-1 bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1 transition-colors"
-                        >
-                          <Check size={14} /> Kabul Et
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDecline(notif); }}
-                          className="flex-1 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1 transition-colors"
-                        >
-                          <X size={14} /> Reddet
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="text-xs font-bold text-sage-500 dark:text-sage-400">
-                        {notif.status === 'accepted' ? 'Kabul edildi' : 'Reddedildi'}
-                      </p>
+                    {notif.type === 'zikir_invite' && (
+                      <>
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="text-sm text-sage-800 dark:text-white">
+                            <span className="font-bold">{notif.senderName}</span> sizi <span className="font-bold">{notif.sessionName}</span> zikrine davet etti.
+                          </p>
+                        </div>
+                        <p className="text-xs text-sage-500 dark:text-sage-400 mb-3">
+                          {new Date(notif.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                        
+                        {notif.status === 'pending' ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAccept(notif); }}
+                              className="flex-1 bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1 transition-colors"
+                            >
+                              <Check size={14} /> Kabul Et
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDecline(notif); }}
+                              className="flex-1 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1 transition-colors"
+                            >
+                              <X size={14} /> Reddet
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-xs font-bold text-sage-500 dark:text-sage-400">
+                            {notif.status === 'accepted' ? 'Kabul edildi' : 'Reddedildi'}
+                          </p>
+                        )}
+                      </>
+                    )}
+
+                    {notif.type === 'new_follower' && (
+                      <>
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="text-sm text-sage-800 dark:text-white">
+                            <span className="font-bold">{notif.senderName}</span> sizi takip etmeye başladı.
+                          </p>
+                        </div>
+                        <p className="text-xs text-sage-500 dark:text-sage-400">
+                          {new Date(notif.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                      </>
+                    )}
+
+                    {notif.type === 'system_announcement' && (
+                      <>
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="text-sm font-bold text-sage-800 dark:text-white">
+                            {notif.title}
+                          </p>
+                        </div>
+                        <p className="text-sm text-sage-600 dark:text-sage-300 mb-2">
+                          {notif.message}
+                        </p>
+                        <p className="text-xs text-sage-500 dark:text-sage-400">
+                          {new Date(notif.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                      </>
                     )}
                   </div>
                 ))

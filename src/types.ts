@@ -27,12 +27,14 @@ export interface HatimData {
 export interface AppNotification {
   id: string;
   userId: string;
-  type: 'zikir_invite';
-  senderId: string;
-  senderName: string;
-  sessionId: string;
-  sessionName: string;
+  type: 'zikir_invite' | 'new_follower' | 'system_announcement';
+  senderId?: string;
+  senderName?: string;
+  sessionId?: string;
+  sessionName?: string;
+  title?: string;
+  message?: string;
   createdAt: string;
   read: boolean;
-  status: 'pending' | 'accepted' | 'declined';
+  status?: 'pending' | 'accepted' | 'declined';
 }

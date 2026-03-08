@@ -130,6 +130,20 @@ export default function App() {
   
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      alert('Tarayıcınız bildirimleri desteklemiyor.');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      new Notification('HatimPro', {
+        body: 'Bildirimler başarıyla etkinleştirildi.',
+        icon: '/favicon.svg'
+      });
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       setUnreadNotifications(0);
@@ -138,6 +152,27 @@ export default function App() {
     const q = query(collection(db, 'notifications'), where('userId', '==', user.uid), where('read', '==', false));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUnreadNotifications(snapshot.docs.length);
+      
+      if (!isInitialLoad.current && Notification.permission === 'granted') {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const notif = change.doc.data() as any;
+            let body = 'Yeni bir bildiriminiz var.';
+            if (notif.type === 'zikir_invite') {
+              body = `${notif.senderName} sizi ${notif.sessionName} zikrine davet etti.`;
+            } else if (notif.type === 'new_follower') {
+              body = `${notif.senderName} sizi takip etmeye başladı.`;
+            } else if (notif.type === 'system_announcement') {
+              body = notif.title || notif.message || 'Sistem duyurusu.';
+            }
+
+            new Notification('HatimPro', {
+              body: body,
+              icon: '/favicon.svg'
+            });
+          }
+        });
+      }
     }, (error) => {
       console.error("Notifications snapshot error:", error);
     });
@@ -1499,6 +1534,29 @@ export default function App() {
           <h3 className="text-sm font-bold text-sage-500 dark:text-white uppercase tracking-widest mb-4">Uygulama Ayarları</h3>
           
           <div className="space-y-6">
+            {/* Notification Permission */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-sage-50 dark:bg-neutral-800 p-2 rounded-lg text-sage-600 dark:text-white">
+                  <Bell size={20} />
+                </div>
+                <div>
+                  <p className="font-bold text-sage-800 dark:text-white">Bildirimler</p>
+                  <p className="text-xs text-sage-500 dark:text-white">Masaüstü bildirimlerini aç</p>
+                </div>
+              </div>
+              <button 
+                onClick={requestNotificationPermission}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                  Notification.permission === 'granted' 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                    : 'bg-sage-200 text-sage-700 dark:bg-neutral-700 dark:text-white hover:bg-sage-300'
+                }`}
+              >
+                {Notification.permission === 'granted' ? 'İzin Verildi' : 'İzin Ver'}
+              </button>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-sage-50 dark:bg-neutral-800 p-2 rounded-lg text-sage-600 dark:text-white">
@@ -1633,62 +1691,47 @@ export default function App() {
               className="absolute w-[150%] h-[150%] border-[40px] border-white/5 rounded-full"
             />
             
-            <div className="relative">
-              {/* Multiple Star Glows for depth */}
+            <div className="relative flex flex-col items-center justify-center">
+              {/* Logo Glow */}
               <motion.div
                 animate={{ 
-                  scale: [1, 1.8, 1],
-                  opacity: [0.2, 0.5, 0.2]
+                  scale: [1, 1.5, 1],
+                  opacity: [0.2, 0.4, 0.2]
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute inset-0 bg-sage-400 blur-3xl rounded-full"
               />
-              <motion.div
-                animate={{ 
-                  scale: [1.2, 1, 1.2],
-                  opacity: [0.1, 0.3, 0.1]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute inset-0 bg-white blur-2xl rounded-full"
-              />
               
-              {/* Rotating Star with pulse */}
+              {/* Logo */}
+              <motion.img
+                src="/favicon.svg"
+                alt="HatimPro Logo"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "backOut" }}
+                className="w-32 h-32 relative z-10 drop-shadow-2xl mb-6"
+              />
+
               <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ 
-                  scale: [1, 1.1, 1], 
-                  rotate: 360,
-                }}
-                transition={{ 
-                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 15, repeat: Infinity, ease: "linear" },
-                  default: { duration: 1, ease: "backOut" }
-                }}
-                className="relative text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="text-center relative z-10"
               >
-                <Star size={140} fill="currentColor" strokeWidth={0.5} />
+                <h1 className="text-4xl font-bold text-white tracking-widest uppercase">HatimPro</h1>
+                <p className="text-white/80 mt-2 text-sm font-medium tracking-wider">Modern Kur'an Takipçisi</p>
               </motion.div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="mt-8 text-center"
-            >
-              <h1 className="text-3xl font-bold text-white tracking-widest uppercase">⭐ HatimPro</h1>
-              <p className="text-white mt-2 text-sm font-medium tracking-tighter">Modern Kur'an Takipçisi</p>
-            </motion.div>
-
-            <div className="mt-12 flex gap-2 justify-center">
-              {[0, 1, 2, 3, 4].map((i) => (
+            <div className="mt-12 flex gap-2 justify-center relative z-10">
+              {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
                   animate={{ 
                     scale: [1, 1.5, 1],
                     opacity: [0.3, 1, 0.3] 
                   }}
-                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
                   className="w-2 h-2 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                 />
               ))}
